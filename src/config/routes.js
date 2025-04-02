@@ -1,0 +1,25 @@
+const routes = {
+    home: '/',
+    sneaker: '/sneaker',
+    nike: '/nike',
+    adidas: '/adidas',
+    mlb: '/mlb',
+    search: '/search',
+    login: 'login',
+    product: '/sneaker/:product',
+    profile: '/@:nickname',
+    addressProfile: '/@:nickname/address-shipping',
+    shoppingCart: '/@:nickname/shopping-cart',
+    checkout: '/@:nickname/checkout',
+    admin: '/admin',
+    adminCategory: '/admin/category',
+    adminProduct: '/admin/shoes',
+    adminAddProduct: '/admin/shoes/:idproduct',
+    adminUpdateBrand: '/admin/category/:idbrand',
+    adminSlider: '/admin/slider',
+    adminBill: '/admin/bill',
+    adminViewBill: '/admin/bill/:idbill',
+    adminStock: '/admin/stock',
+};
+
+export default routes;
