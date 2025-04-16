@@ -22,6 +22,33 @@ const brandController = {
             console.error('Error: ',error);
             res.status(500).json({message: 'Failed'});
         }
+    },
+    createBrand: async(req, res)=>{
+        try {
+            const newBrandId = await Brand.create(req.body);
+            const newBrand = await Brand.getById(newBrandId);
+            res.status(201).json(newBrand);
+        } catch (error) {
+            console.log('SQL: ',req.body); 
+            
+            console.error('Error: ',error);
+            res.status(500).json({message: 'Error: ',error});
+            
+        }
+    },
+    updateBrand: async(req, res)=>{
+        try {
+            const updated = await Brand.update(req.params.id,req.body);
+            if(updated){
+                const updateChucVu = await Brand.update(req.params.id,req.body);
+                res.json(updateChucVu);
+            }else{
+                res.status(404).json({message: 'Không tìm thấy chức vụ'})
+            }
+        } catch (error) {
+            console.error('Error: ',error);
+            res.stauts(500).json({message: 'Error',error});
+        }
     }
 }
 

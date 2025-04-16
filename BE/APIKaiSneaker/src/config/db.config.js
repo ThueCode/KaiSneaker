@@ -8,8 +8,7 @@ const pool = mysql.createPool({
   database: process.env.DB_NAME,
   port: process.env.DB_PORT,
   waitForConnections: true,
-  connectionLimit: 10,
-  queueTimeout: 0
+  connectionLimit: 10
 });
 
 module.exports = pool.promise(); // Sử dụng promise để dễ dàng làm việc với async/await

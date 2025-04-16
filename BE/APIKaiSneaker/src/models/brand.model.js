@@ -10,7 +10,9 @@ const Brand = {
         return rows[0];
     },
     create: async (newBrand) => {
-        const [result] = await db.query('INSERT INTO BRAND SET ?', [newBrand]);
+        const [result] = await db.query('INSERT INTO BRAND(shoes_name, shoes_description, shoes_price,idbrand) SET ?', [newBrand]);
+        console.log('SQLLL: ',newBrand);
+        
         return result.insertId;
     },
     update: async (id, updateBrand) => {
