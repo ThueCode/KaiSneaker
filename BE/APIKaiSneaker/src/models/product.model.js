@@ -22,3 +22,5 @@ const Product = {
         return result.affectedRows > 0;
     },
 };
+
+module.exports = Product;

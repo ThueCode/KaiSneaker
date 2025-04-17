@@ -40,14 +40,14 @@ const brandController = {
         try {
             const updated = await Brand.update(req.params.id,req.body);
             if(updated){
-                const updateChucVu = await Brand.update(req.params.id,req.body);
-                res.json(updateChucVu);
+                const updateBrand = await Brand.update(req.params.id,req.body);
+                res.json(updateBrand);
             }else{
                 res.status(404).json({message: 'Không tìm thấy chức vụ'})
             }
         } catch (error) {
             console.error('Error: ',error);
-            res.stauts(500).json({message: 'Error',error});
+            res.status(500).json({message: 'Error',error});
         }
     }
 }

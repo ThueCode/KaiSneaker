@@ -6,7 +6,7 @@ const Brand = {
         return rows;
     },
     getById: async (id) => {
-        const [rows] = await db.query('SELECT * FROM BRAND WHERE IDBRAND = ?', [id]);
+        const [rows] = await db.query('SELECT * FROM BRAND WHERE ID_BRAND = ?', [id]);
         return rows[0];
     },
     create: async (newBrand) => {
@@ -16,11 +16,11 @@ const Brand = {
         return result.insertId;
     },
     update: async (id, updateBrand) => {
-        const [result] = await db.query('UPDATE BRAND SET ? WHERE IDBRAND ?', [updateBrand], id);
+        const [result] = await db.query('UPDATE BRAND SET ? WHERE ID_BRAND = ?', [updateBrand, id]);
         return result.affectedRows > 0;
     },
     delete: async (id) => {
-        const [result] = await db.query('DELETE FROM BRAND WHERE IDBRAND ?');
+        const [result] = await db.query('DELETE FROM BRAND WHERE ID_BRAND  = ?',id);
         return result.affectedRows > 0;
     },
 };
