@@ -16,6 +16,27 @@ interface BrandDTO {
     imageBrand: string
 }
 const CategoryAdmin = () => {
+    //check null
+
+    const initVal = {
+        brandName: '',
+    }
+    interface ErrorType {
+        brandName?: string;
+    }
+    const [formVal, setFormVal] = useState(initVal);
+    const [formErr, setFormErr] = useState<ErrorType>({});
+    const [isSubmit, setSubmit] = useState(false);
+
+    const validate = (values: any) => {
+        const errs: ErrorType = {};
+        if (!values.brandName) {
+            errs.brandName = "Không được bỏ trống tên thương hiệu"
+        }
+        return errs
+    };
+    const [isContainerActive, setIsContainerActive] = useState(false);
+    //---------------------------
     const [statusModal, setStatusModal] = useState(false);
     const [stateBrand, setStateBrand] = useState<BrandDTO>({
         brandName: '',
@@ -39,6 +60,9 @@ const CategoryAdmin = () => {
 
     useEffect(() => {
         getCourses();
+        if (Object.keys(formErr).length === 0 && isSubmit) {
+            //
+        }
     }, []);
 
     const getCourses = async () => {
@@ -52,12 +76,22 @@ const CategoryAdmin = () => {
             console.error(error);
         }
     };
-
+    //handChange
+    const handleChange = (e: any) => {
+        const { name, value } = e.target;
+        setFormVal({
+            ...formVal, [name]
+                : value
+        });
+    }
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         await handleSubmitNewBrand(
             stateBrand
         );
+        setFormErr(validate(formVal));
+        setSubmit(true);
+
     };
 
     const handleSubmitNewBrand = (data: BrandDTO) => {
@@ -208,7 +242,7 @@ const CategoryAdmin = () => {
                     }}
                 >
                     <div className={cx('modal-header')}>
-                        <h2 className={cx('modal__heading')}>Thêm danh mục</h2>
+                        <h2 className={cx('modal__heading')}>Thêm thương hiệu</h2>
                         <FontAwesomeIcon
                             className={cx('modal-header-icon--close')}
                             // nge hành vi click vào button close
@@ -255,17 +289,22 @@ const CategoryAdmin = () => {
                         </div>
 
                         <label htmlFor="" className={cx('input-label')}>
-                            Tên danh mục
+                            Tên thương hiệu <b>*</b>
                         </label>
                         <input
                             className={cx('input-item')}
                             type="text"
-                            placeholder="Tên danh mục"
-                            required
-                            onChange={(e) => setStateBrand({ ...stateBrand, brandName: e.target.value })}
+                            // required
+                            value={formVal.brandName}
+                            name='brandName'
+                            onChange={(e) => {
+                                handleChange(e);
+                                setStateBrand({ ...stateBrand, brandName: e.target.value })
+                            }}
                         />
+                        <p style={{color:"red"}}>{formErr.brandName}</p>
                         <label htmlFor="" className={cx('input-label')}>
-                            Mô tả danh mục
+                            Mô tả thương hiệu
                         </label>
                         <textarea
                             className={cx('input-item-description')}
