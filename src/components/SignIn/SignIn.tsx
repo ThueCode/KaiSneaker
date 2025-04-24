@@ -4,35 +4,88 @@ import classNames from 'classnames/bind';
 import styles from './signIn.module.scss';
 import { Link, useNavigate } from 'react-router-dom';
 import images from '~/assets/images';
-import { useState, useReducer } from 'react';
-import { useAuth } from '~/context/AuthContext';
+import { useState, useReducer, useRef, useEffect } from 'react';
 import { toast } from 'react-toastify';
-
-// import axios from 'axios';
-// Cookie
-// import { useCookies } from 'react-cookie';
-
-// Login
-// import { initStateLogin, loginReducer } from '~/reducers/loginReducers';
-// import { setNameLogin, setPasswordLogin } from '~/actions/loginActions';
-
-// Register
-// import { initStateRegister, registerReducer } from '~/reducers/registerReducers';
-// import { setNameRegister, setPasswordRegister, setRePasswordRegister } from '~/actions/registerActions';
 
 const cx = classNames.bind(styles);
 
 const SignIn = () => {
-    const [isContainerActive, setIsContainerActive] = useState(false);
-    // State Đăng nhập
-    // const [stateLogin, dispatchLogin] = useReducer(loginReducer, initStateLogin);
-    // // State Đăng ký
-    // const [stateRegister, dispatchRegister] = useReducer(registerReducer, initStateRegister);
-    // const [cookies, setCookie] = useCookies(['name']);
 
-    const { login } = useAuth(); // 🧠 Lấy hàm login từ context
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
+    const initialValues = {
+        username: "",
+        repassword: "",
+        password: "",
+        SignUpusername: "",
+        SignUprepassword: "",
+        SignUppassword: ""
+    };
+    const [formValues, setFormValues] = useState(initialValues);
+    const [formErrors, setFormErrors] = useState<ErrorType>({});
+    const [isSubmit, setIsSubmit] = useState(false);
+
+    const handleChange = (e: any) => {
+        const { name, value } = e.target;
+        setFormValues({ ...formValues, [name]: value });
+    };
+
+    const handleSubmit = (e: any) => {
+        e.preventDefault();
+        setFormErrors(validate(formValues));
+        setIsSubmit(true);
+    };
+    interface ErrorType {
+        username?: string;
+        password?: string;
+        SignUpusername?: string;
+        SignUppassword?: string;
+        SignUprepassword?: string;
+
+    }
+    const validate = (values: any) => {
+        const errors: ErrorType = {};
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i; //check email
+        //check không bỏ trống
+        if (!values.username) {
+            errors.username = "Vui lòng nhập tên tài khoản!";
+        }
+        if (!values.password) {
+            errors.password = "Vui lòng nhập mật khẩu";
+        } else if (values.password.length < 4) {
+            errors.password = "Mật Khẩu không được ít hơn 4 ký tự";
+        } else if (values.password.length > 18) {
+            errors.password = "Mật khẩu không dài quá 18 ký tự";
+        }else{
+            //check đăng nhập
+        }
+        //
+        if (!values.SignUpusername) {
+            errors.SignUpusername = "Vui lòng nhập tên tài khoản!";
+        }
+        if (!values.SignUppassword) {
+            errors.SignUppassword = "Vui lòng nhập mật khẩu";
+        } else if (values.SignUppassword.length < 4) {
+            errors.SignUppassword = "Mật Khẩu không được ít hơn 4 ký tự";
+        } else if (values.SignUppassword.length > 18) {
+            errors.SignUppassword = "Mật khẩu không dài quá 18 ký tự";
+        }
+        if (!values.SignUprepassword) {
+            errors.SignUprepassword = "Vui lòng nhập mật khẩu1";
+        } else if (values.SignUprepassword.length < 4) {
+            errors.SignUprepassword = "Mật Khẩu không được ít hơn 4 ký tự1";
+        } else if (values.SignUprepassword.length > 10) {
+            errors.SignUprepassword = "Mật khẩu không dài quá 18 ký tự1";
+        } else {
+            if (values.SignUppassword == values.SignUprepassword) {
+                //đăng ký
+                
+            } else {
+                errors.SignUppassword = "Mật khẩu phải giống nhau!";
+                errors.SignUprepassword = "Mật khẩu phải giống nhau!";
+            }
+        }
+        return errors;
+    };
+    const [isContainerActive, setIsContainerActive] = useState(false);
     let navigate = useNavigate();
 
     // console.log(cookies);
@@ -42,75 +95,16 @@ const SignIn = () => {
     const signInButton = () => {
         setIsContainerActive(false);
     };
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
 
-        try {
-            await login(username, password); // 🔐 Gọi login context
-            toast.success("Đăng nhập thành công!");
-            navigate('/'); // Chuyển hướng về trang chủ 
-        } catch (err) {
-            toast.error("Sai tên đăng nhập hoặc mật khẩu");
+    // Login
+
+
+    useEffect(() => {
+        console.log(formErrors);
+        if (Object.keys(formErrors).length === 0 && isSubmit) {
+            console.log(formValues);
         }
-    };
-    // // Login
-    // const handleSubmitLG = async (e) => {
-    //     e.preventDefault();
-
-    //     await handleSubmitLogin({
-    //         stateLogin,
-    //     });
-    // };
-    // const handleSubmitLogin = (data) => {
-    //     try {
-    //         axios
-    //             .post('http://26.17.209.162/api/account/signin', {
-    //                 data: stateLogin,
-    //             })
-    //             .then((response) => {
-    //                 alert('Đăng nhập thành công');
-    //                 setCookie('name', { ID: response.data.id, STATUS: response.data.status }, { path: '/' });
-    //                 navigate('/');
-    //             });
-    //     } catch (error) {
-    //         console.log(error);
-    //     }
-    // };
-
-    // // Đăng ký
-    // const handleSubmitRG = async (e) => {
-    //     e.preventDefault();
-    //     if (stateRegister.REPASSWORD === stateRegister.PASSWORD) {
-    //         console.log(stateRegister);
-    //         await handleSubmitRegister({
-    //             stateRegister,
-    //         });
-    //     } else {
-    //         alert('Nhập lại mật khẩu không trùng khớp');
-    //     }
-    // };
-
-    // const handleSubmitRegister = (data) => {
-    //     try {
-    //         axios
-    //             .post('http://26.17.209.162/api/account/signup', {
-    //                 data: stateRegister,
-    //             })
-    //             .then((res) => {
-    //                 if (res.data == 1) {
-    //                     alert('Đăng ký thành công');
-    //                     navigate('/');
-    //                 } else if (res.data == -1) {
-    //                     alert('Tài khoản đã tồn tại');
-    //                 } else {
-    //                     alert('Đăng ký thất bại');
-    //                 }
-    //             });
-    //     } catch (error) {
-    //         console.log(error);
-    //     }
-    // };
-
+    }, [formErrors]);
     return (
         <div className={cx('login')}>
             {/* <!-- Begin Trigger --> */}
@@ -120,7 +114,7 @@ const SignIn = () => {
             <div className={cx('wrapper', `${isContainerActive ? 'right-panel-active' : ''}`)}>
                 <div className={cx('inner', 'sign_up')}>
                     <form action="#" className={cx('morri-container')}
-                    // onSubmit={handleSubmitRG}
+                        onSubmit={handleSubmit}
                     >
                         <h1 className={cx('heading')}>Tạo tài khoản</h1>
                         <div className={cx('social')}>
@@ -136,29 +130,40 @@ const SignIn = () => {
                             type="text"
                             placeholder="Tên tài khoản"
                             className={cx('morri_input')}
-                        // onChange={(e) => dispatchRegister(setNameRegister(e.target.value))}
+                            name='SignUpusername'
+                            value={formValues.SignUpusername}
+                            onChange={(e) => {
+                                handleChange(e);
+                            }}
                         />
+                        <p>{formErrors.SignUpusername}</p>
                         <input
                             type="password"
                             placeholder="Mật khẩu"
                             className={cx('morri_input')}
-                        // onChange={(e) => dispatchRegister(setPasswordRegister(e.target.value))}
+                            name='SignUppassword'
+                            value={formValues.SignUppassword}
+                            onChange={(e) => {
+                                handleChange(e);
+                            }}
                         />
+                        <p>{formErrors.SignUppassword}</p>
                         <input
                             type="password"
                             placeholder="Nhập lại mật khẩu"
                             className={cx('morri_input')}
-                        // onChange={(e) => dispatchRegister(setRePasswordRegister(e.target.value))}
+                            name='SignUprepassword'
+                            value={formValues.SignUprepassword}
+                            onChange={(e) => {
+                                handleChange(e);
+                            }}
                         />
-                        <button className={cx('btn')}>Đăng kí</button>
+                        <p>{formErrors.SignUprepassword}</p>
+                        <button type='submit' className={cx('btn')}>Đăng kí</button>
                     </form>
                 </div>
                 <div className={cx('inner', 'sign_in')}>
-                    <form className={cx('morri-container')}
-                        //  onSubmit={handleSubmitLG}
-                        onSubmit={handleSubmit}
-
-                    >
+                    <form className={cx('morri-container')} onSubmit={handleSubmit}>
                         <h1 className={cx('heading')}>Đăng nhập</h1>
                         <div className={cx('social')}>
                             <Link to="" className={cx('social_item')}>
@@ -171,27 +176,30 @@ const SignIn = () => {
                         <span className={cx('subcontent')}>hoặc sử dụng tài khoản của bạn</span>
                         <input
                             type="text"
-                            placeholder="Username"
+                            placeholder="Email"
                             className={cx('morri_input')}
-                            value={username}
-                            // onChange={(e) => dispatchLogin(setNameLogin(e.target.value))}
-                            onChange={(e) => setUsername(e.target.value)}
-
+                            name='username'
+                            value={formValues.username}
+                            onChange={(e) => {
+                                handleChange(e);
+                            }}
                         />
+                        <p>{formErrors.username}</p>
                         <input
                             type="password"
                             placeholder="Password"
                             className={cx('morri_input')}
-                            value={password}
-
-                            // onChange={(e) => dispatchLogin(setPasswordLogin(e.target.value))}
-                            onChange={(e) => setPassword(e.target.value)}
-
+                            name='password'
+                            value={formValues.password}
+                            onChange={(e) => {
+                                handleChange(e);
+                            }}
                         />
+                        <p>{formErrors.password}</p>
                         <Link to="/langquen" className={cx('forgot')}>
                             Quên mật khẩu?
                         </Link>
-                        <button className={cx('btn')} type="submit">Đăng nhập</button>
+                        <button type='submit' className={cx('btn')}>Đăng nhập</button>
                     </form>
                 </div>
                 <div className={cx('overlay-container')}>
