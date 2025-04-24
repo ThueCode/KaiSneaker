@@ -19,8 +19,11 @@ import AddProduct from "./components/AddProduct/AddProduct"
 import UpdateBrand from "./components/UpdateBrand/UpdateBrand"
 import { fetchAllBrand } from "./service/api"
 import { Brand } from "./models/Brand"
+import { useAuth } from "./context/AuthContext"
 
 const App = () => {
+
+  const isAuth = useAuth();
   const [brandData, setBrandData] = useState<Brand[]>([]);
 
   const getBrand = async () => {
@@ -74,9 +77,12 @@ const App = () => {
         </Route>
 
         {/* LOGIN */}
-        <Route path="/login" element={<Login />}>
-          <Route path="" element={<SignIn />} />
-        </Route>
+        {!isAuth.isAuthenticated &&
+          <Route path="/login" element={<Login />}>
+            <Route path="" element={<SignIn />} />
+          </Route>
+        }
+
       </Routes>
     </>
   )

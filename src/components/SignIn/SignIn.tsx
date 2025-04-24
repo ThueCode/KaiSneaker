@@ -5,6 +5,8 @@ import styles from './signIn.module.scss';
 import { Link, useNavigate } from 'react-router-dom';
 import images from '~/assets/images';
 import { useState, useReducer } from 'react';
+import { useAuth } from '~/context/AuthContext';
+import { toast } from 'react-toastify';
 
 // import axios from 'axios';
 // Cookie
@@ -27,6 +29,10 @@ const SignIn = () => {
     // // State Đăng ký
     // const [stateRegister, dispatchRegister] = useReducer(registerReducer, initStateRegister);
     // const [cookies, setCookie] = useCookies(['name']);
+
+    const { login } = useAuth(); // 🧠 Lấy hàm login từ context
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
     let navigate = useNavigate();
 
     // console.log(cookies);
@@ -36,7 +42,17 @@ const SignIn = () => {
     const signInButton = () => {
         setIsContainerActive(false);
     };
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
 
+        try {
+            await login(username, password); // 🔐 Gọi login context
+            toast.success("Đăng nhập thành công!");
+            navigate('/'); // Chuyển hướng về trang chủ 
+        } catch (err) {
+            toast.error("Sai tên đăng nhập hoặc mật khẩu");
+        }
+    };
     // // Login
     // const handleSubmitLG = async (e) => {
     //     e.preventDefault();
@@ -139,7 +155,9 @@ const SignIn = () => {
                 </div>
                 <div className={cx('inner', 'sign_in')}>
                     <form className={cx('morri-container')}
-                    //  onSubmit={handleSubmitLG}
+                        //  onSubmit={handleSubmitLG}
+                        onSubmit={handleSubmit}
+
                     >
                         <h1 className={cx('heading')}>Đăng nhập</h1>
                         <div className={cx('social')}>
@@ -153,20 +171,27 @@ const SignIn = () => {
                         <span className={cx('subcontent')}>hoặc sử dụng tài khoản của bạn</span>
                         <input
                             type="text"
-                            placeholder="Email"
+                            placeholder="Username"
                             className={cx('morri_input')}
-                        // onChange={(e) => dispatchLogin(setNameLogin(e.target.value))}
+                            value={username}
+                            // onChange={(e) => dispatchLogin(setNameLogin(e.target.value))}
+                            onChange={(e) => setUsername(e.target.value)}
+
                         />
                         <input
                             type="password"
                             placeholder="Password"
                             className={cx('morri_input')}
-                        // onChange={(e) => dispatchLogin(setPasswordLogin(e.target.value))}
+                            value={password}
+
+                            // onChange={(e) => dispatchLogin(setPasswordLogin(e.target.value))}
+                            onChange={(e) => setPassword(e.target.value)}
+
                         />
                         <Link to="/langquen" className={cx('forgot')}>
                             Quên mật khẩu?
                         </Link>
-                        <button className={cx('btn')}>Đăng nhập</button>
+                        <button className={cx('btn')} type="submit">Đăng nhập</button>
                     </form>
                 </div>
                 <div className={cx('overlay-container')}>
