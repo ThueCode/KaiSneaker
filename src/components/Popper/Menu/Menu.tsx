@@ -1,4 +1,4 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, use, useEffect, useState } from 'react';
 import classNames from 'classnames/bind';
 import Tippy from '@tippyjs/react/headless';
 import { Wrapper as PopperWrapper } from '~/components/Popper/index';
@@ -19,18 +19,18 @@ const cx = classNames.bind(styles);
 
 const Menu = ({ children, items = [] }: MenuProps) => {
     const [history, setHistory] = useState<{ data: typeof items }[]>([{ data: items }]);
-    const current = history[history.length - 1];
+    // const current = history[history.length - 1];
 
     const renderItems = () => {
-        return current.data.map((item, index) => {
-            return <MenuItem key={index} data={item} />;
+        return items.map((item, index) => {
+            return item ? <MenuItem key={index} data={item} /> : null;
         });
     };
 
     return (
         <Tippy
             interactive
-            delay={[0, 700]}
+            delay={[0, 0]}
             offset={[12, 8]}
             placement="bottom-end"
             render={(attrs) => (

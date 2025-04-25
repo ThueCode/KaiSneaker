@@ -9,6 +9,7 @@ type AuthContextType = {
   logout: () => void; // Hàm đăng xuất
 };
 
+
 // 👉 Tạo context để chia sẻ trạng thái đăng nhập
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -20,7 +21,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // 🔄 Kiểm tra khi load trang lần đầu: nếu có token trong cookie => đã đăng nhập
   useEffect(() => {
     const token = Cookies.get("token");
-    console.log(Cookies.get("token")); // 👉 Kiểm tra token trong cooki  e
     setIsAuthenticated(!!token); // ✅ true nếu token tồn tại
   }, []);
 

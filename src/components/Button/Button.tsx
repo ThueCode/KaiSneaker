@@ -65,8 +65,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
         Comp = 'a';  // Nếu có prop `href`, sử dụng thẻ <a>
     }
 
-    const classes = cx('wrapper', {
-        [className ?? '']: className, // Nếu có className, thêm vào
+    const classes = cx('wrapper', className, {
         primary,
         outline,
         text,

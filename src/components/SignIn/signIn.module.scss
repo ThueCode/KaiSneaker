@@ -4,13 +4,16 @@
     align-items: center;
     flex-direction: column;
     height: 100vh;
+
     /*Go Home page*/
     .logo {
         margin: 15px;
+
         .logo_img {
             width: 150px;
         }
     }
+
     /*Modal*/
     .wrapper {
         border-radius: 10px;
@@ -121,11 +124,9 @@
             .overlay {
                 /* chỉnh ở đây  */
                 background: var(--layout-gradient-login);
-                background: -webkit-linear-gradient(
-                    to right,
-                    var(--layout-gradient-login),
-                    var(--layout-gradient-login)
-                );
+                background: -webkit-linear-gradient(to right,
+                        var(--layout-gradient-login),
+                        var(--layout-gradient-login));
                 background: linear-gradient(to right, var(--layout-gradient-login), var(--layout-gradient-register));
                 background-repeat: no-repeat;
                 background-size: cover;
@@ -173,11 +174,19 @@
             }
         }
 
+        .errors_txt {
+            color: var(--red-color);
+            font-size: 1.4rem;
+            font-weight: bold;
+            text-align: center;
+        }
+
         .heading {
             font-weight: 500;
             font-size: 3rem;
         }
     }
+
     .wrapper.right-panel-active {
         .sign_in {
             transform: translateX(100%);
@@ -207,7 +216,9 @@
         }
     }
 }
+
 @keyframes show {
+
     0%,
     49.99% {
         opacity: 0;

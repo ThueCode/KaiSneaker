@@ -5,27 +5,30 @@ import App from './App.tsx'
 import { BrowserRouter } from 'react-router'
 import { Bounce, ToastContainer } from 'react-toastify'
 import { AuthProvider } from './context/AuthContext'
+import { BrandProvider } from './context/BrandContext.tsx'
 
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AuthProvider>
-      <BrowserRouter>
-        <App />
-        <ToastContainer
-          position="top-right"
-          autoClose={5000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick={false}
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-          transition={Bounce}
-        />
-      </BrowserRouter>
+      <BrandProvider>
+        <BrowserRouter>
+          <App />
+          <ToastContainer
+            position="top-right"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick={false}
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+            transition={Bounce}
+          />
+        </BrowserRouter>
+      </BrandProvider>
     </AuthProvider>
 
 
