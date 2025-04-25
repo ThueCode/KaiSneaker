@@ -120,6 +120,40 @@ const updateStock = (idStock: UUID, data: StockDTO) => {
 
 // END STOCK
 
+
+// USER
+
+const fetchAllUser = () => {
+    const URL_BACKEND = "/users"
+    return axios.get(URL_BACKEND)
+}
+
+const fetchUserById = (idUser: UUID) => {
+    const URL_BACKEND = `/users/${idUser}`
+    return axios.get(URL_BACKEND)
+}
+
+const updateUser = (idUser: UUID, data: any) => {
+    const URL_BACKEND = `/users/${idUser}`
+    return axios.put(URL_BACKEND, data)
+}
+
+const deleteUser = (idUser: UUID) => {
+    const URL_BACKEND = `/users/${idUser}`
+    return axios.delete(URL_BACKEND)
+}
+
+const registerUser = (username: string, password: string) => {
+    const data = {
+        username: username,
+        password: password
+    }
+    const URL_BACKEND = `/register`
+    return axios.post(URL_BACKEND, data)
+}
+
+// END USER
+
 export {
     fetchAllBrand, updateBrand, createBrand, deleteBrand,
 
@@ -129,5 +163,6 @@ export {
 
     fetchAllSize,
 
-    fetchAllStock, createStock, updateStock, deleteStock, fetchStockByProduct
+    fetchAllStock, createStock, updateStock, deleteStock, fetchStockByProduct,
+    fetchAllUser, fetchUserById, updateUser, deleteUser, registerUser
 }

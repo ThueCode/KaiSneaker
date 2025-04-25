@@ -1,17 +1,21 @@
 import Tippy from '@tippyjs/react';
+
 import styles from './header.module.scss';
 import classNames from 'classnames/bind';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router-dom';
 import images from '~/assets/images';
 import Image from '~/components/Image/Image';
 import Menu from '~/components/Popper/Menu/Menu';
 import Button from '~/components/Button/Button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSignIn, faSignOut, faUser } from '@fortawesome/free-solid-svg-icons';
-import { useState } from 'react';
+import { faBagShopping, faSignIn, faSignOut, faUser } from '@fortawesome/free-solid-svg-icons';
+import { use, useEffect, useState } from 'react';
 import { useDebounce } from '~/hooks';
 import Search from '../Search/Search';
 import Navbar from '../Navbar/Navbar';
+import getUserFromToken, { JwtPayload } from '~/utils/getUserFromToken';
+import { useAuth } from '~/context/AuthContext';
+import { toast } from 'react-toastify';
 
 const cx = classNames.bind(styles);
 
@@ -23,37 +27,47 @@ const MENU_ITEMS = [
     },
 ];
 const Header = () => {
-    // const [cookies, setCookie, removeCookie] = useCookies(['name']);
     const [countShopping, setCountShopping] = useState([]);
-    const [accountData, setAccountData] = useState([]);
-    const [cookies, setCookie] = useState("");
+
+    const { logout, isAuthenticated } = useAuth();
+    const [userData, setUserData] = useState<JwtPayload>({});
+    const navigate = useNavigate();
     // const debounced = useDebounce(countShopping, 500);
 
-    // const removeCK = () => {
-    //     removeCookie('name');
-    //     window.location.reload();
-    // };
+    const removeCookie = () => {
+        logout();
+        toast.success('Đăng xuất thành công!');
+        navigate('/');
+    };
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            setUserData(getUserFromToken() || {})
+        } else {
+            setUserData({})
+        }
+    }, [isAuthenticated])
+
+    console.log(userData);
+
 
     const userMenu = [
         {
             icon: <FontAwesomeIcon icon={faUser} />,
-            // title: cookies.name
-            //     ? cookies.name.STATUS === 'e3afed0047b08059d0fada10f400c1e5'
-            //         ? 'Đi tới trang Admin'
-            //         : 'Thông tin tài khoản'
-            //     : '',
-            // to: cookies.name
-            //     ? cookies.name.STATUS === 'e3afed0047b08059d0fada10f400c1e5'
-            //         ? `${config.routes.admin}`
-            //         : `/@${cookies.name.ID}`
-            //     : '',
+            title: userData?.role === "ADMIN"
+                ? 'Đi tới trang Admin'
+                : 'Thông tin tài khoản',
+            to: userData?.role === "ADMIN"
+                ? `admin/dashboard`
+                : `/@${userData?.idAccount}`,
+
         },
         {
             icon: <FontAwesomeIcon icon={faSignOut} />,
             title: 'Đăng xuất',
             separate: true,
             to: '/',
-            // onClick: removeCK,
+            onClick: removeCookie,
         },
     ];
 
@@ -65,40 +79,33 @@ const Header = () => {
             <Navbar />
             <div className={cx('actions')}>
                 <Search />
-                {/* {cookies.name ? (
-                    <>
-                        <Tippy delay={[0, 50]} content="Giỏ hàng" placement="bottom">
-                            <Link
-                                to={cookies.name ? `/@${cookies.name.ID}/shopping-cart` : ''}
-                                className={cx('action-btn')}
-                            >
-                                <FontAwesomeIcon icon={faBagShopping} />
-                                <span className={cx('badge')}>{countShopping.length}</span>
-                            </Link>
-                        </Tippy>
-                    </>
+                {isAuthenticated ? (
+                    <Tippy content="Giỏ hàng" placement="bottom-start">
+                        <Link
+                            to={userData ? `/@${userData.idAccount}/shopping-cart` : ''}
+                            className={cx('action-btn')}
+                        >
+                            <FontAwesomeIcon icon={faBagShopping} />
+                            <span className={cx('badge')}>{countShopping.length}</span>
+                        </Link>
+                    </Tippy>
                 ) : (
                     <></>
-                )} */}
+                )}
                 <Menu
-                    // items={cookies.name ? userMenu : MENU_ITEMS}
-                    items={MENU_ITEMS}
+                    items={isAuthenticated ? userMenu : MENU_ITEMS}
                 >
-                    {/* {cookies.name ? (
+                    {isAuthenticated ? (
                         <Image
                             className={cx('user-avatar')}
-                            src={accountData.IMAGEUSER !== null ? accountData.IMAGEUSER : ''}
-                            alt={accountData.FULLNAME}
+                            src={userData.imageUser || ""}
+                            alt={userData.fullName}
                         />
                     ) : (
                         <Button className={cx('account-btn')}>
                             <FontAwesomeIcon icon={faUser} />
                         </Button>
-                    )} */}
-
-                    <Button className={cx('account-btn')}>
-                        <FontAwesomeIcon icon={faUser} />
-                    </Button>
+                    )}
                 </Menu>
             </div>
         </header>

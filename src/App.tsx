@@ -4,7 +4,7 @@ import HomePage from "./page/Home/HomePage"
 import Sneaker from "./page/Sneaker/Sneaker"
 import DefaultWithSidebar from "./layouts/DefaultWithSidebar/DefaultWithSideBar"
 import DetailProduct from "./components/DetailProduct/DetailProduct"
-import { useEffect, useState } from "react"
+import { useContext } from "react"
 import BrandSneaker from "./page/Sneaker/BrandSneaker/BrandSneaker"
 import Login from "./layouts/Login/Login"
 import SignIn from "./components/SignIn/SignIn"
@@ -17,46 +17,32 @@ import AdminStock from "./components/AdminStock/AdminStock"
 import CategoryAdmin from "./components/CategoryAdmin/CategoryAdmin"
 import AddProduct from "./components/AddProduct/AddProduct"
 import UpdateBrand from "./components/UpdateBrand/UpdateBrand"
-import { fetchAllBrand } from "./service/api"
-import { Brand } from "./models/Brand"
 import { useAuth } from "./context/AuthContext"
+import { BrandContext } from "./context/BrandContext"
+import { ScrollToTop } from "./hooks"
 
 const App = () => {
 
   const isAuth = useAuth();
-  const [brandData, setBrandData] = useState<Brand[]>([]);
-
-  const getBrand = async () => {
-    try {
-      await fetchAllBrand()
-        .then((res) => {
-          return res.data.result;
-
-        }).then((data) => setBrandData(data))
-    } catch (error) {
-      console.error(error);
-    }
-  };
-  useEffect(() => {
-    getBrand()
-  }, []);
+  const brandData = useContext(BrandContext);
 
   return (
     <>
-      <Routes>
+      <ScrollToTop />
 
+      <Routes>
         {/* Public */}
         <Route path="/" element={<DefaultLayout />}>
           <Route path="" element={<HomePage />} />
           <Route path="/sneaker" element={<DefaultWithSidebar />}>
             <Route path="" element={<Sneaker />} />
-            {brandData.map((brandData) => {
+            {brandData ? brandData.map((brandData) => {
               return (
                 <>
                   <Route path={`${brandData.brandName}`} element={<BrandSneaker brandName={brandData.brandName} />} />
                 </>
               )
-            })}
+            }) : <></>}
           </Route>
           <Route path="/sneaker/:product" element={<DetailProduct />} />
         </Route>

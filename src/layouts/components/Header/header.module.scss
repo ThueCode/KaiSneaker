@@ -29,9 +29,12 @@
 }
 
 .account-btn {
-    font-size: 2rem;
-    margin-right: 28px;
-    padding: 4px 8px;
+    min-width: 32px !important;
+    width: 32px !important;
+    font-size: 2rem !important;
+    padding: 4px 8px !important;
+    margin-inline: 8px !important;
+
     background-color: transparent;
     cursor: pointer;
 }
@@ -44,7 +47,6 @@
     padding: 4px 10px;
     cursor: pointer;
     position: relative;
-    display: flex;
 }
 
 .badge {
@@ -52,7 +54,7 @@
     top: -8px;
     right: -10px;
     height: 2.4rem;
-    line-height: 2.2rem;
+    line-height: 2.4rem;
     width: 2.4rem;
     border-radius: 40px;
     font-size: 1.6rem;
@@ -61,6 +63,7 @@
     z-index: -1;
     border: 1px solid var(--black-color);
     color: var(--black-color);
+    overflow: hidden;
 }
 
 .user-avatar {
@@ -68,6 +71,6 @@
     height: 32px;
     object-fit: cover;
     border-radius: 50%;
-    margin: 0 12px;
+    margin-inline: 12px;
     cursor: pointer;
 }
