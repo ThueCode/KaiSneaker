@@ -16,6 +16,11 @@ import AdminStock from "./components/AdminStock/AdminStock"
 import CategoryAdmin from "./components/CategoryAdmin/CategoryAdmin"
 import AddProduct from "./components/AddProduct/AddProduct"
 import UpdateBrand from "./components/UpdateBrand/UpdateBrand"
+<<<<<<< HEAD
+=======
+import { useAuth } from "./context/AuthContext"
+import UpdateSlider from "./components/UpdateSlider/UpdateSlider"
+>>>>>>> e772ed720c1c50ba0a23afdd5d33604b25ae3fe2
 import { BrandContext } from "./context/BrandContext"
 import { ScrollToTop } from "./hooks"
 
@@ -54,9 +59,25 @@ const App = () => {
           <Route path="sneaker/:product" element={<DetailProduct />} /> {/* Chi tiết sản phẩm */}
         </Route>
 
+<<<<<<< HEAD
         {/* LOGIN-ONLY ROUTES - Nếu đã login thì bị redirect */}
         <Route element={<PublicRoute />}>
           <Route path="/login" element={<SignIn />} />
+=======
+        {/* ADMIN */}
+        <Route path="/admin" element={<Admin />}>
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="bill" element={<AdminBill />} />
+          <Route path="stock" element={<AdminStock />} />
+          <Route path="brand" element={<CategoryAdmin />} />
+          <Route path="products" element={<AdminProduct />} />
+          <Route path="products/new-item" element={<AddProduct />} />
+          <Route path="products/:product" element={<AddProduct />} />
+          <Route path="brand/:id" element={<UpdateBrand />} />
+
+          <Route path="slider" element={<AdminSlider />} />
+          <Route path="slider/:id" element={<UpdateSlider />} />
+>>>>>>> e772ed720c1c50ba0a23afdd5d33604b25ae3fe2
         </Route>
         {
           isAuthenticated &&

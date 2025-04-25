@@ -3,25 +3,88 @@ import classNames from 'classnames/bind';
 import styles from './adminSlider.module.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowUp, faXmark } from '@fortawesome/free-solid-svg-icons';
+import Button from '../Button/Button';
+import { useLocation } from 'react-router';
 
 const cx = classNames.bind(styles);
-
+interface SliderDTO {
+    slideId: number;
+    imageUrl: string;
+    description: string;
+    order: number;
+}
 const AdminSlider = () => {
-    // const [stateSlide, dispatchSlide] = useReducer(slideReducer, initStateSlide);
-    const [sliderData, setSliderData] = useState([]);
 
-    // useEffect(() => {
-    //     axios.get(`http://26.17.209.162/api/image/get`).then((res) => {
-    //         setSliderData(res.data);
-    //         dispatchSlide(addSlide(res.data));
-    //     });
-    // }, []);
-    // Convert input sang base 64
-    const uploadImage = async (e: any, callback: any) => {
-        const file = e.target.files[0];
-        const base64 = await convertBase64(file);
-        // dispatchSlide(callback(base64));
-    };
+    let location = useLocation();
+    const [sliderModal, setSliderModal] = useState(false);
+    const [sliderDataState, setSliderDataState] = useState<SliderDTO[]>([]);
+    //------ sài ticket
+    const showBuyTickets = () => {
+        setSliderModal(true);
+    }
+    const hideBuyTickets = () => {
+        setSliderModal(false);
+    }
+    //------
+
+    // const [stateSlide, dispatchSlide] = useReducer(slideReducer, initStateSlide);
+    const [sliderData, setSliderData] = useState<SliderDTO>({
+        slideId: 0,
+        imageUrl: "",
+        description: "",
+        order: 0,
+    });
+    //----------convert base64
+    const uploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            try {
+                const base64 = await convertBase64(file);
+                setSliderData((prev) => ({
+                    ...prev,
+                    imageUrl: base64 as string,
+                }));
+            } catch (error) {
+                console.log(error);
+            }
+        } else {
+            return;
+        }
+    }
+    // ------fetch data ảo
+
+    const dummyBase64 =
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."; // thay bằng base64 thật
+
+    //----------------------
+    useEffect(() => {
+        // axios.get(`http://26.17.209.162/api/image/get`).then((res) => {
+        //     setSliderData(res.data);
+        //     dispatchSlide(addSlide(res.data));
+        // });
+        const mockSliderData: SliderDTO[] = [
+            {
+                slideId: 1,
+                imageUrl: dummyBase64,
+                description: "Khuyến mãi hè rực cháy!",
+                order: 1,
+            },
+            {
+                slideId: 2,
+                imageUrl: dummyBase64,
+                description: "Giảm giá lên tới 50%",
+                order: 2,
+            },
+            {
+                slideId: 3,
+                imageUrl: dummyBase64,
+                description: "Hàng mới về cực hot",
+                order: 3,
+            },
+        ];
+
+        setSliderDataState(mockSliderData);
+    }, []);
 
     const convertBase64 = (file: File) => {
         return new Promise((resolve, reject) => {
@@ -77,10 +140,61 @@ const AdminSlider = () => {
         <>
             <div className={cx('wrapper')}>
                 <div className={cx('inner')}>
-                    <h2 className={cx('heading')}>Chỉnh sửa Slider</h2>
+                    <h2 className={cx('heading')}>
+                        {location.state?.data ? "Cập nhật Slider" : "Thêm Slider"}
+                    </h2>
+                    <button className={cx('slider-create-btn')} onClick={showBuyTickets}>
+                        Thêm mới
+                    </button>
                 </div>
-                <div className={cx('wrapper_img')}>
-                    <form className={cx('inner_img')}
+                <div className={cx('inner')}>
+                    {/* <h2 className={cx('heading')}>Chỉnh sửa Slider</h2> */}
+                </div>
+                <table className={cx('details-table')}>
+                    <thead className={cx('details-thead')}>
+                        <tr className={cx('details-title-list')}>
+                            <td className={cx('details-title-item')}>Vị trí ưu tiên</td>
+                            <td className={cx('details-title-item')}>Ảnh</td>
+                            <td className={cx('details-title-item')}>Hành động</td>
+                        </tr>
+                    </thead>
+                    <tbody className={cx('details-tbody')} >
+                        {sliderDataState.length > 0 ?
+                            sliderDataState.map((item) => {
+                                return (
+                                    <tr className={cx('details-content-list')} key={item.order}>
+                                        <td className={cx('details-content-item')}>
+                                            <div className={cx('details-content-item-priority')}>
+                                                {item.order}
+                                            </div>
+                                        </td>
+                                        <td className={cx('details-content-item')}>
+                                            <img
+                                                className={cx('details-content-item-img')}
+                                                src={item?.imageUrl ? item.imageUrl : ''}
+                                            ></img>
+                                        </td>
+                                        <td className={cx('details-content-item')}>
+                                            <Button
+                                                to={`/admin/slider/${item.slideId}`}
+                                                state={{ data: item }}
+                                                className={cx('details-content-item-btn')}
+                                            >
+                                                Sửa
+                                            </Button>
+                                            <Button
+                                                className={cx('details-content-item-btn')}
+                                            // onClick={() => handleSubmitDeleteBrand(item)}
+                                            >
+                                                Xóa
+                                            </Button>
+                                        </td>
+                                    </tr>
+                                )
+                            }) : <></>}
+                    </tbody>
+                </table>
+                {/* <form className={cx('inner_img')}
                     // onSubmit={handleSubmit}
                     >
                         <div className={cx('upload_box')}>
@@ -112,102 +226,81 @@ const AdminSlider = () => {
                                     </div>
                                 </div>
                             </div>
-                            <div className={cx('file_upload')}>
-                                <input
-                                    type="file"
-                                    className={cx('upload')}
-                                // disabled={stateSlide.IMAGESHOES2}
-                                // onChange={(e) => uploadImage(e, setIMG2)}
-                                />
-                                <FontAwesomeIcon
-                                    icon={faArrowUp}
-                                // className={cx(stateSlide.IMAGESHOES2 ? 'fadeout' : '')}
-                                ></FontAwesomeIcon>
-                                <div className={cx('img_box',)
-                                    // stateSlide.IMAGESHOES2 != '' ? 'fadein' : '')
-                                }                                    >
-                                    <img alt="" className={cx('img')}
-                                    // src={stateSlide.IMAGESHOES2}
-                                    />
-                                    <div className={cx('delete_box',
-                                        // stateSlide.IMAGESHOES2 != '' ? 'active' : ''
-                                    )}>
-                                        <FontAwesomeIcon
-                                            icon={faXmark}
-                                            className={cx('btn_delete')}
-                                        // onClick={(e) => dispatchSlide(deleteImg2())}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div className={cx('upload_box')}>
-                            <div className={cx('file_upload')}>
-                                <input
-                                    type="file"
-                                    className={cx('upload')}
-                                // disabled={stateSlide.IMAGESHOES3}
-                                // onChange={(e) => uploadImage(e, setIMG3)}
-                                />
-                                <FontAwesomeIcon
-                                    icon={faArrowUp}
-                                // className={cx(stateSlide.IMAGESHOES3 ? 'fadeout' : '')}
-                                ></FontAwesomeIcon>
-                                <div className={cx('img_box',
-                                    // stateSlide.IMAGESHOES3 != '' ? 'fadein' : ''
-
-                                )}>
-                                    <img alt="" className={cx('img')}
-                                    //  src={stateSlide.IMAGESHOES3} 
-                                    />
-                                    <div className={cx('delete_box',
-                                        // stateSlide.IMAGESHOES3 != '' ? 'active' : ''
-                                    )}>
-                                        <FontAwesomeIcon
-                                            icon={faXmark}
-                                            className={cx('btn_delete')}
-                                        // onClick={(e) => dispatchSlide(deleteImg3())}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                            <div className={cx('file_upload')}>
-                                <input
-                                    type="file"
-                                    className={cx('upload')}
-                                // disabled={stateSlide.IMAGESHOES4}
-                                // onChange={(e) => uploadImage(e, setIMG4)}
-                                />
-                                <FontAwesomeIcon
-                                    icon={faArrowUp}
-                                // className={cx(stateSlide.IMAGESHOES4 ? 'fadeout' : '')}
-                                ></FontAwesomeIcon>
-                                <div className={cx('img_box',
-                                    //  stateSlide.IMAGESHOES4 != '' ? 'fadein' : ''
-                                )}>
-                                    <img alt="" className={cx('img')}
-                                    // src={stateSlide.IMAGESHOES4} 
-                                    />
-                                    <div className={cx('delete_box',
-                                        // stateSlide.IMAGESHOES4 != '' ? 'active' : ''
-                                    )}>
-                                        <FontAwesomeIcon
-                                            icon={faXmark}
-                                            className={cx('btn_delete')}
-                                        // onClick={(e) => dispatchSlide(deleteImg4())}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                         <button className={cx('btn_update')}
                         // disabled={checkChangeSlide()}
                         >
                             Update
                         </button>
+                    </form> */}
+            </div>
+            {/* <!-- End adminCategoriesTable --> */}
+            {/* <!--Begin Modal --> */}
+            <div
+                className={cx('modal', sliderModal ? 'open' : '')}
+                // lắng nge ra ngoài ; khi click vào khoảng không của modal
+                // (ở ngoài cái ticket) sẽ ĐÓNG ticket lại
+                // modal.addEventListener('click', hideBuyTickets);
+                onClick={hideBuyTickets}
+            >
+                <div
+                    className={cx('modal-papes')}
+                    // ngừng việc nỗi bọt lại;  sẽ không đóng modal container lại nửa (tới đó nó bị công an chặn lại)
+                    onClick={(e) => {
+                        e.stopPropagation();
+                    }}
+                >
+                    <div className={cx('modal-header')}>
+                        <h2 className={cx('modal__heading')}>Vui lòng chọn ảnh slider</h2>
+                        <FontAwesomeIcon
+                            className={cx('modal-header-icon--close')}
+                            // nge hành vi click vào button close
+                            onClick={hideBuyTickets}
+                            icon={faXmark}
+                        />
+                    </div>
+                    <form className={cx('category-list')}
+                    // onSubmit={handleSubmit}
+                    >
+                        <div className={cx('slider_img')}>
+                            <div className={cx('img_item')}>
+                                <div className={cx('file_upload')}>
+                                    <input
+                                        className={cx('upload')}
+                                        type="file"
+                                        disabled={sliderData?.imageUrl ? true : false}
+                                        onChange={(e) => uploadImage(e)}
+                                    />
+                                    <FontAwesomeIcon
+                                        icon={faArrowUp}
+                                        className={cx(sliderData?.imageUrl ? 'fadeout' : '')}
+                                    ></FontAwesomeIcon>
+                                    <div className={cx('img_box',
+                                        sliderData?.imageUrl ? 'fadein' : ''
+                                    )}>
+                                        <img
+                                            alt={sliderData?.description ? sliderData?.description : ''}
+                                            className={cx('img')}
+                                            src={sliderData?.imageUrl ? sliderData.imageUrl : ''}
+                                        />
+                                        <div className={cx('delete_box',
+                                            sliderData?.imageUrl ? 'active' : ''
+                                        )}>
+                                            <FontAwesomeIcon
+                                                icon={faXmark}
+                                                className={cx('btn_delete')}
+                                                onClick={() => setSliderData({ ...sliderData, imageUrl: "" })}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button className={cx('btn')}>Save</button>
                     </form>
                 </div>
             </div>
+            {/* <!--End Modal --> */}
         </>
     );
 }

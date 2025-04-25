@@ -18,6 +18,83 @@ import { toast } from 'react-toastify';
 const cx = classNames.bind(styles);
 
 const AddProduct = () => {
+    const [brandData, setBrandData] = useState<Brand[]>([]);
+    let location = useLocation();
+    let navigate = useNavigate();
+    const initVal = {
+        productName: "",
+        printPrice: 0,
+        productDescription: "",
+        productImg: [],
+        brand: {
+            idBrand: '----',
+        }
+    }
+    interface ErrProduct {
+        productName: string,
+        printPrice: string,
+        productDescription: string,
+        productImg: string[],
+        brand: {
+            idBrand: string,
+        }
+
+    }
+    const [formVal, setFormVal] = useState(initVal);
+    const [errVal, setErrVal] = useState<ErrProduct>({
+        productName: "",
+        printPrice: "",
+        productDescription: "",
+        productImg: [],
+        brand: {
+            idBrand: '----',
+        }
+    })
+    const validate = (values: any) => {
+        const errors: ErrProduct = {
+            productName: "",
+            printPrice: "",
+            productDescription: "",
+            productImg: [],
+            brand: {
+                idBrand: '----',
+            }
+        };
+        if (!values.productName) {
+            errors.productName = "Tên sản phẩm không được để trống";
+        }
+        if (!values.printPrice) {
+            errors.printPrice = "Giá sản phẩm không được để trống";
+        } else if (values.printPrice < 0) {
+            errors.printPrice = "Giá sản phẩm không hợp lệ";
+        }
+        if (!values.productDescription) {
+            errors.productDescription = "Mô tả sản phẩm không được để trống";
+        }
+        if (values.brand.idBrand === '----') {
+            errors.brand.idBrand = "Vui lòng chọn thương hiệu";
+        }
+        return errors;
+    };
+    const [err, setErr] = useState<ErrProduct>({
+        productName: "",
+        printPrice: "",
+        productDescription: "",
+        productImg: [],
+        brand: {
+            idBrand: '----',
+        }
+    })
+    const [isSubmit, setIsSubmit] = useState(false);
+    const handleChange = (e: any) => {
+        const { name, value } = e.target;
+        setFormVal({ ...formVal, [name]: value });
+        setErrVal({ ...errVal, [name]: "" });
+    }
+    // const handleSubmit = (e: any) => {
+
+    // }
+    // `
     const [dataProduct, setDataProduct] = useState<ProductDTO>({
         shoesName: "",
         shoesPrice: 0,
@@ -27,14 +104,6 @@ const AddProduct = () => {
             idBrand: '----',
         }
     });
-
-    const [brandData, setBrandData] = useState<Brand[]>([]);
-    let location = useLocation();
-    let navigate = useNavigate();
-
-    console.log(dataProduct);
-
-
     const getBrand = async () => {
         try {
             const isNewItemPage = location.pathname.endsWith('/new-item');
@@ -60,6 +129,11 @@ const AddProduct = () => {
         }
     }
     useEffect(() => {
+        if (Object.keys(errVal).length > 0 && isSubmit) {
+            if (Object.values(errVal).every((val) => val === "")) {
+                console.log("Form is valid, proceed with submission.");
+            }
+        }
         if (!location.state?.data?.shoesId && !location.pathname.endsWith('/new-item')) {
             navigate("/admin/products")
         }
@@ -84,14 +158,17 @@ const AddProduct = () => {
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const idProduct: UUID = location?.state?.data.shoesId;
+        e.preventDefault();
+        setErrVal(validate(formVal));
+        setIsSubmit(true);
+        // const idProduct: UUID = location?.state?.data.shoesId;
 
-        if (location.state?.data) {
-            handleSubmitUpdateProduct(idProduct, dataProduct)
-        }
-        else {
-            handleCreateProduct(dataProduct);
-        }
+        // if (location.state?.data) {
+        //     handleSubmitUpdateProduct(idProduct, dataProduct)
+        // }
+        // else {
+        //     handleCreateProduct(dataProduct);
+        // }
     };
 
     const handleCreateProduct = async (data: ProductDTO) => {
@@ -221,11 +298,13 @@ const AddProduct = () => {
                                 className={cx('info-txt')}
                                 type="text"
                                 id="name"
-                                required
-                                value={dataProduct?.shoesName}
-                                placeholder="Tên sản phẩm"
-                                onChange={(e) => setDataProduct({ ...dataProduct, shoesName: e.target.value })}
+                                // required
+                                value={formVal.productName}
+                                // placeholder="Tên sản phẩm"
+                                name='productName'
+                                onChange={(e) => handleChange(e)}
                             />
+                            <span style={{ color: "red" }} className={cx('error')}>{errVal.productName}</span>
                         </div>
                     </div>
                     <div className={cx('group')}>
@@ -237,16 +316,25 @@ const AddProduct = () => {
                                 className={cx('info-txt')}
                                 type="text"
                                 id="price"
-                                required
-                                value={dataProduct?.shoesPrice}
-                                placeholder="Giá tiền"
-                                onChange={(e) => setDataProduct({ ...dataProduct, shoesPrice: +e.target.value })}
+                                // required
+                                name='printPrice'
+                                value={formVal.printPrice}
+                                // value={dataProduct?.shoesPrice}
+                                // placeholder="Giá tiền"
+                                // onChange={(e) => setDataProduct({ ...dataProduct, shoesPrice: +e.target.value })}
+                                // onKeyPress={(event) => {
+                                //     if (!/[0-9]/.test(event.key)) {
+                                //         event.preventDefault();
+                                //     }
+                                // }}
+                                onChange={(e) => handleChange(e)}
                                 onKeyPress={(event) => {
                                     if (!/[0-9]/.test(event.key)) {
                                         event.preventDefault();
                                     }
                                 }}
                             />
+                            <span style={{ color: "red" }} className={cx('error')}>{errVal.printPrice}</span>
                         </div>
                         <div className={cx('select-box')}>
                             <input type="checkbox" className={cx('select_view')} />
@@ -310,6 +398,7 @@ const AddProduct = () => {
                                 )}
                                 <div className={cx('option-bg')}></div>
                             </div>
+                            <span style={{ color: "red" }} className={cx('error')}>{errVal.brand.idBrand}</span>
                         </div>
                     </div>
                     <div className={cx('description')}>
@@ -319,6 +408,7 @@ const AddProduct = () => {
                                 <CKEditor
                                     editor={ClassicEditor as any}
                                     data={location.state?.data ? location.state?.data?.shoesDescription : ''}
+                                    // data
                                     onChange={(e, editor: any) => {
                                         const data = editor.getData();
                                         setDataProduct({ ...dataProduct, shoesDescription: data });
@@ -328,7 +418,7 @@ const AddProduct = () => {
 
                         </div>
                     </div>
-
+                    {/* <span style={{ color: "red", margin: "5%" }} className={cx('error')}>{errVal.productDescription}</span> */}
                     <div className={cx('product_img')}>
                         {loadViewImgItem()}
                     </div>
