@@ -6,7 +6,6 @@ import DefaultWithSidebar from "./layouts/DefaultWithSidebar/DefaultWithSideBar"
 import DetailProduct from "./components/DetailProduct/DetailProduct"
 import { useContext } from "react"
 import BrandSneaker from "./page/Sneaker/BrandSneaker/BrandSneaker"
-import Login from "./layouts/Login/Login"
 import SignIn from "./components/SignIn/SignIn"
 import Admin from "./layouts/Admin/Admin"
 import Dashboard from "./components/Dashboard/Dashboard"
@@ -17,59 +16,75 @@ import AdminStock from "./components/AdminStock/AdminStock"
 import CategoryAdmin from "./components/CategoryAdmin/CategoryAdmin"
 import AddProduct from "./components/AddProduct/AddProduct"
 import UpdateBrand from "./components/UpdateBrand/UpdateBrand"
-import { useAuth } from "./context/AuthContext"
 import { BrandContext } from "./context/BrandContext"
 import { ScrollToTop } from "./hooks"
 
+// Các route bảo vệ
+import PublicRoute from "./routes/PublicRoute"
+import AdminRoute from "./routes/AdminRoutes"
+import PrivateRoute from "./routes/PrivateRoute"
+import ProfileAccount from "./layouts/ProfileAccount/ProfileAccount"
+import { useAuth } from "./context/AuthContext"
+
 const App = () => {
-
-  const isAuth = useAuth();
-  const brandData = useContext(BrandContext);
-
+  const brandData = useContext(BrandContext); // Lấy danh sách brand từ context
+  const { isAuthenticated } = useAuth();
   return (
     <>
-      <ScrollToTop />
-
+      <ScrollToTop /> {/* Auto scroll lên đầu khi chuyển route */}
       <Routes>
-        {/* Public */}
+
+        {/* PUBLIC ROUTES */}
         <Route path="/" element={<DefaultLayout />}>
-          <Route path="" element={<HomePage />} />
-          <Route path="/sneaker" element={<DefaultWithSidebar />}>
-            <Route path="" element={<Sneaker />} />
-            {brandData ? brandData.map((brandData) => {
-              return (
-                <>
-                  <Route path={`${brandData.brandName}`} element={<BrandSneaker brandName={brandData.brandName} />} />
-                </>
-              )
-            }) : <></>}
+          <Route index element={<HomePage />} /> {/* Trang chủ */}
+          <Route path="sneaker" element={<DefaultWithSidebar />}>
+            <Route index element={<Sneaker />} /> {/* Tất cả sneaker */}
+
+            {/* Các route động theo brand */}
+            {brandData &&
+              brandData.map((brandData) => (
+                <Route
+                  key={brandData.brandName}
+                  path={brandData.brandName} // /sneaker/nike, /sneaker/adidas
+                  element={<BrandSneaker brandName={brandData.brandName} />}
+                />
+              ))}
           </Route>
-          <Route path="/sneaker/:product" element={<DetailProduct />} />
+
+          <Route path="sneaker/:product" element={<DetailProduct />} /> {/* Chi tiết sản phẩm */}
         </Route>
 
-        {/* ADMIN */}
-        <Route path="/admin" element={<Admin />}>
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="bill" element={<AdminBill />} />
-          <Route path="stock" element={<AdminStock />} />
-          <Route path="brand" element={<CategoryAdmin />} />
-          <Route path="products" element={<AdminProduct />} />
-          <Route path="products/new-item" element={<AddProduct />} />
-          <Route path="products/:product" element={<AddProduct />} />
-          <Route path="brand/:id" element={<UpdateBrand />} />
-
-          <Route path="slider" element={<AdminSlider />} />
-
+        {/* LOGIN-ONLY ROUTES - Nếu đã login thì bị redirect */}
+        <Route element={<PublicRoute />}>
+          <Route path="/login" element={<SignIn />} />
         </Route>
+        {
+          isAuthenticated &&
+          <>
+            {/* USER-ONLY ROUTES - Đã đăng nhập mới vào được */}
+            <Route element={<PrivateRoute />}>
+              <Route path="/profile" element={<ProfileAccount />}>
+                <Route path=":id" element={<></>} /> {/* Thông tin tài khoản */}
+              </Route>
+            </Route>
 
-        {/* LOGIN */}
-        {!isAuth.isAuthenticated &&
-          <Route path="/login" element={<Login />}>
-            <Route path="" element={<SignIn />} />
-          </Route>
-        }
+            {/* ADMIN-ONLY ROUTES - Kiểm tra quyền admin */}
+            <Route element={<AdminRoute />}>
+              <Route path="/admin" element={<Admin />}>
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="bill" element={<AdminBill />} />
+                <Route path="stock" element={<AdminStock />} />
+                <Route path="brand" element={<CategoryAdmin />} />
+                <Route path="products" element={<AdminProduct />} />
+                <Route path="products/new-item" element={<AddProduct />} />
+                <Route path="products/:product" element={<AddProduct />} />
+                <Route path="brand/:id" element={<UpdateBrand />} />
+                <Route path="slider" element={<AdminSlider />} />
+              </Route>
+            </Route>
+          </>}
 
-      </Routes>
+      </Routes >
     </>
   )
 }

@@ -143,6 +143,11 @@ const deleteUser = (idUser: UUID) => {
     return axios.delete(URL_BACKEND)
 }
 
+const fetchUserByName = (username: string) => {
+    const URL_BACKEND = `/users/username?username=${username}`
+    return axios.get(URL_BACKEND)
+}
+
 const registerUser = (username: string, password: string) => {
     const data = {
         username: username,
@@ -164,5 +169,5 @@ export {
     fetchAllSize,
 
     fetchAllStock, createStock, updateStock, deleteStock, fetchStockByProduct,
-    fetchAllUser, fetchUserById, updateUser, deleteUser, registerUser
+    fetchAllUser, fetchUserById, updateUser, deleteUser, registerUser, fetchUserByName
 }

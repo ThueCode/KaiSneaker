@@ -1,16 +1,10 @@
-// src/routes/PublicRoute.tsx
-import React from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-type Props = {
-    children: React.ReactNode;
-};
-
-const PublicRoute: React.FC<Props> = ({ children }) => {
+const PublicRoute = () => {
     const { isAuthenticated } = useAuth();
 
-    return isAuthenticated ? <Navigate to="/" /> : <>{children}</>;
+    return isAuthenticated ? <Navigate to="/" replace /> : <><Outlet /></>;
 };
 
 export default PublicRoute;

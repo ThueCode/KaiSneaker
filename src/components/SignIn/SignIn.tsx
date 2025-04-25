@@ -4,7 +4,7 @@ import classNames from 'classnames/bind';
 import styles from './signIn.module.scss';
 import { Link, useNavigate } from 'react-router-dom';
 import images from '~/assets/images';
-import { useState, useReducer, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { useAuth } from '~/context/AuthContext';
 import { registerUser } from '~/service/api';
@@ -179,6 +179,7 @@ const SignIn = () => {
                             className={cx('morri_input')}
                             name='signUpusername'
                             value={formSignUp?.signUpusername}
+                            autoComplete="new-username"
                             onChange={(e) => {
                                 handleChangeSignUp(e);
                             }}
@@ -190,6 +191,7 @@ const SignIn = () => {
                             className={cx('morri_input')}
                             name='signUppassword'
                             value={formSignUp?.signUppassword}
+                            autoComplete="new-password"
                             onChange={(e) => {
                                 handleChangeSignUp(e);
                             }}
@@ -201,6 +203,7 @@ const SignIn = () => {
                             className={cx('morri_input')}
                             name='signUprepassword'
                             value={formSignUp?.signUprepassword}
+                            autoComplete="new-password"
                             onChange={(e) => {
                                 handleChangeSignUp(e);
                             }}
@@ -227,6 +230,7 @@ const SignIn = () => {
                             className={cx('morri_input')}
                             name='username'
                             value={formSignIn.username}
+                            autoComplete="current-username"
                             onChange={(e) => {
                                 handleChangeSignIn(e);
                             }}
@@ -238,6 +242,7 @@ const SignIn = () => {
                             className={cx('morri_input')}
                             name='password'
                             value={formSignIn.password}
+                            autoComplete="current-password"
                             onChange={(e) => {
                                 handleChangeSignIn(e);
                             }}

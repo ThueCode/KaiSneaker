@@ -1,7 +1,7 @@
 import classNames from 'classnames/bind';
 import styles from './sidebarAdmin.module.scss';
 import { Link, useNavigate } from 'react-router-dom';
-import { useState, useEffect, ReactNode } from 'react';
+import { useState, ReactNode } from 'react';
 import Image from '~/components/Image/Image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -15,6 +15,8 @@ import {
     faSliders,
 } from '@fortawesome/free-solid-svg-icons';
 import { faBarChart } from '@fortawesome/free-regular-svg-icons';
+import { useAuth } from '~/context/AuthContext';
+import { toast } from 'react-toastify';
 
 const cx = classNames.bind(styles);
 
@@ -25,20 +27,17 @@ interface SidebarAdminProps {
 const SidebarAdmin: React.FC<SidebarAdminProps> = ({ children }) => {
     const [statusMenu, setStatusMenu] = useState<boolean>(false);
     const navigate = useNavigate();
+    const { userData, logout } = useAuth();
 
-    useEffect(() => {
-        // Example for authentication check
-        // if (!cookie.name) {
-        //     navigate('/login');
-        // }
-    }, [navigate]);
 
     const handleToggleMenu = () => {
         setStatusMenu(!statusMenu);
     };
 
-    const logOut = () => {
-        // Example: removeCookie('name');
+    const logOut = async () => {
+        await logout();
+        toast.success('Đăng xuất thành công!');
+        navigate('/');
     };
 
     return (
@@ -118,7 +117,7 @@ const SidebarAdmin: React.FC<SidebarAdminProps> = ({ children }) => {
                     </div>
 
                     <div className={cx('user')}>
-                        <Image className={cx('user-img')} src="" alt="" />
+                        {userData && <Image className={cx('user-img')} src={userData.imageUser} alt={userData.fullName} />}
                     </div>
                 </div>
                 {children}

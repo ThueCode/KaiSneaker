@@ -9,11 +9,10 @@ import Menu from '~/components/Popper/Menu/Menu';
 import Button from '~/components/Button/Button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBagShopping, faSignIn, faSignOut, faUser } from '@fortawesome/free-solid-svg-icons';
-import { use, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useDebounce } from '~/hooks';
 import Search from '../Search/Search';
 import Navbar from '../Navbar/Navbar';
-import getUserFromToken, { JwtPayload } from '~/utils/getUserFromToken';
 import { useAuth } from '~/context/AuthContext';
 import { toast } from 'react-toastify';
 
@@ -29,8 +28,7 @@ const MENU_ITEMS = [
 const Header = () => {
     const [countShopping, setCountShopping] = useState([]);
 
-    const { logout, isAuthenticated } = useAuth();
-    const [userData, setUserData] = useState<JwtPayload>({});
+    const { logout, userData } = useAuth();
     const navigate = useNavigate();
     // const debounced = useDebounce(countShopping, 500);
 
@@ -40,26 +38,15 @@ const Header = () => {
         navigate('/');
     };
 
-    useEffect(() => {
-        if (isAuthenticated) {
-            setUserData(getUserFromToken() || {})
-        } else {
-            setUserData({})
-        }
-    }, [isAuthenticated])
-
-    console.log(userData);
-
-
     const userMenu = [
         {
             icon: <FontAwesomeIcon icon={faUser} />,
-            title: userData?.role === "ADMIN"
+            title: userData?.role?.roleName === "ADMIN"
                 ? 'Đi tới trang Admin'
                 : 'Thông tin tài khoản',
-            to: userData?.role === "ADMIN"
+            to: userData?.role?.roleName === "ADMIN"
                 ? `admin/dashboard`
-                : `/@${userData?.idAccount}`,
+                : `/profile/@${userData?.idAccount}`,
 
         },
         {
@@ -79,7 +66,7 @@ const Header = () => {
             <Navbar />
             <div className={cx('actions')}>
                 <Search />
-                {isAuthenticated ? (
+                {userData ? (
                     <Tippy content="Giỏ hàng" placement="bottom-start">
                         <Link
                             to={userData ? `/@${userData.idAccount}/shopping-cart` : ''}
@@ -93,9 +80,9 @@ const Header = () => {
                     <></>
                 )}
                 <Menu
-                    items={isAuthenticated ? userMenu : MENU_ITEMS}
+                    items={userData ? userMenu : MENU_ITEMS}
                 >
-                    {isAuthenticated ? (
+                    {userData ? (
                         <Image
                             className={cx('user-avatar')}
                             src={userData.imageUser || ""}
