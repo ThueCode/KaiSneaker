@@ -20,6 +20,7 @@ import UpdateBrand from "./components/UpdateBrand/UpdateBrand"
 import { fetchAllBrand } from "./service/api"
 import { Brand } from "./models/Brand"
 import { useAuth } from "./context/AuthContext"
+import UpdateSlider from "./components/UpdateSlider/UpdateSlider"
 
 const App = () => {
 
@@ -73,7 +74,7 @@ const App = () => {
           <Route path="brand/:id" element={<UpdateBrand />} />
 
           <Route path="slider" element={<AdminSlider />} />
-
+          <Route path="slider/:id" element={<UpdateSlider />} />
         </Route>
 
         {/* LOGIN */}

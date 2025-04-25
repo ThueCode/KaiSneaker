@@ -11,13 +11,13 @@ import { toast } from 'react-toastify';
 
 const cx = classNames.bind(styles);
 interface BrandDTO {
+    idBrand: string,
     brandName: string,
     descriptionBrand: string,
     imageBrand: string
 }
 const CategoryAdmin = () => {
     //check null
-
     const initVal = {
         brandName: '',
     }
@@ -27,7 +27,14 @@ const CategoryAdmin = () => {
     const [formVal, setFormVal] = useState(initVal);
     const [formErr, setFormErr] = useState<ErrorType>({});
     const [isSubmit, setSubmit] = useState(false);
-
+    const [isContainerActive, uploadImagesetIsContainerActive] = useState(false);
+    const [statusModal, setStatusModal] = useState(false);
+    const [stateBrand, setStateBrand] = useState<BrandDTO>({
+        idBrand: '',
+        brandName: '',
+        descriptionBrand: '',
+        imageBrand: ''
+    });
     const validate = (values: any) => {
         const errs: ErrorType = {};
         if (!values.brandName) {
@@ -35,14 +42,8 @@ const CategoryAdmin = () => {
         }
         return errs
     };
-    const [isContainerActive, setIsContainerActive] = useState(false);
     //---------------------------
-    const [statusModal, setStatusModal] = useState(false);
-    const [stateBrand, setStateBrand] = useState<BrandDTO>({
-        brandName: '',
-        descriptionBrand: '',
-        imageBrand: ''
-    });
+
     const [brandData, setBrandData] = useState<Brand[]>([]);
 
     // Begin : Tickets
@@ -57,8 +58,30 @@ const CategoryAdmin = () => {
         setStatusModal(false);
     };
     // End : Tickets
-
+    const dummyBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...";
     useEffect(() => {
+        const mockData: Brand[] = [
+            {
+                idBrand: "123-1231313-12-121-23131",
+                brandName: "Apple",
+                descriptionBrand: "Thương hiệu công nghệ nổi tiếng toàn cầu.",
+                imageBrand: dummyBase64,
+            },
+            {
+                idBrand:"123-1231313-12-121-23131",
+                brandName: "Samsung",
+                descriptionBrand: "Hãng điện tử lớn đến từ Hàn Quốc.",
+                imageBrand: dummyBase64,
+            },
+            {
+                idBrand:"123-1231313-12-121-23131",
+                brandName: "Sony",
+                descriptionBrand: "Thương hiệu nổi tiếng với thiết bị âm thanh và hình ảnh.",
+                imageBrand: dummyBase64,
+            },
+        ];
+
+        setBrandData(mockData);
         getCourses();
         if (Object.keys(formErr).length === 0 && isSubmit) {
             //
@@ -113,21 +136,21 @@ const CategoryAdmin = () => {
 
     const handleSubmitDeleteBrand = async (item: Brand) => {
 
-        try {
-            if (window.confirm('Bạn có chắc chắn muốn xóa thương hiệu này không?')) {
-                await deleteBrand(item.idBrand)
-                    .then((res) => {
-                        if (res.data?.success) {
-                            toast.success('Xóa thương hiệu thành công');
-                            getCourses();
-                        } else {
-                            toast.error('Xóa thương hiệu thất bại');
-                        }
-                    });
-            }
-        } catch (error) {
-            console.log(error);
-        }
+        // try {
+        //     if (window.confirm('Bạn có chắc chắn muốn xóa thương hiệu này không?')) {
+        //         await deleteBrand(item.idBrand)
+        //             .then((res) => {
+        //                 if (res.data?.success) {
+        //                     toast.success('Xóa thương hiệu thành công');
+        //                     getCourses();
+        //                 } else {
+        //                     toast.error('Xóa thương hiệu thất bại');
+        //                 }
+        //             });
+        //     }
+        // } catch (error) {
+        //     console.log(error);
+        // }
     };
 
     // Convert input sang base 64
@@ -302,7 +325,7 @@ const CategoryAdmin = () => {
                                 setStateBrand({ ...stateBrand, brandName: e.target.value })
                             }}
                         />
-                        <p style={{color:"red"}}>{formErr.brandName}</p>
+                        <p style={{ color: "red" }}>{formErr.brandName}</p>
                         <label htmlFor="" className={cx('input-label')}>
                             Mô tả thương hiệu
                         </label>
