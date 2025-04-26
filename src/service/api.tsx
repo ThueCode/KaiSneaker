@@ -123,6 +123,19 @@ const updateStock = (idStock: UUID, data: StockDTO) => {
 
 // USER
 
+export interface UserDTO {
+    username: string,
+    password: string,
+    fullName: string,
+    gender: string,
+    cccd: string,
+    email: string,
+    numberPhone: string,
+    dateOfBirth: string,
+    imageUser: string,
+    roleName: string
+}
+
 const fetchAllUser = () => {
     const URL_BACKEND = "/users"
     return axios.get(URL_BACKEND)
@@ -133,7 +146,7 @@ const fetchUserById = (idUser: UUID) => {
     return axios.get(URL_BACKEND)
 }
 
-const updateUser = (idUser: UUID, data: any) => {
+const updateUser = (idUser: UUID, data: UserDTO) => {
     const URL_BACKEND = `/users/${idUser}`
     return axios.put(URL_BACKEND, data)
 }

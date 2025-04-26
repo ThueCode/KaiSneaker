@@ -16,20 +16,15 @@ import AdminStock from "./components/AdminStock/AdminStock"
 import CategoryAdmin from "./components/CategoryAdmin/CategoryAdmin"
 import AddProduct from "./components/AddProduct/AddProduct"
 import UpdateBrand from "./components/UpdateBrand/UpdateBrand"
-<<<<<<< HEAD
-=======
-import { useAuth } from "./context/AuthContext"
-import UpdateSlider from "./components/UpdateSlider/UpdateSlider"
->>>>>>> e772ed720c1c50ba0a23afdd5d33604b25ae3fe2
 import { BrandContext } from "./context/BrandContext"
 import { ScrollToTop } from "./hooks"
-
 // Các route bảo vệ
 import PublicRoute from "./routes/PublicRoute"
 import AdminRoute from "./routes/AdminRoutes"
 import PrivateRoute from "./routes/PrivateRoute"
 import ProfileAccount from "./layouts/ProfileAccount/ProfileAccount"
 import { useAuth } from "./context/AuthContext"
+import Profile from "./page/Profile/Profile"
 
 const App = () => {
   const brandData = useContext(BrandContext); // Lấy danh sách brand từ context
@@ -59,33 +54,17 @@ const App = () => {
           <Route path="sneaker/:product" element={<DetailProduct />} /> {/* Chi tiết sản phẩm */}
         </Route>
 
-<<<<<<< HEAD
         {/* LOGIN-ONLY ROUTES - Nếu đã login thì bị redirect */}
         <Route element={<PublicRoute />}>
           <Route path="/login" element={<SignIn />} />
-=======
-        {/* ADMIN */}
-        <Route path="/admin" element={<Admin />}>
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="bill" element={<AdminBill />} />
-          <Route path="stock" element={<AdminStock />} />
-          <Route path="brand" element={<CategoryAdmin />} />
-          <Route path="products" element={<AdminProduct />} />
-          <Route path="products/new-item" element={<AddProduct />} />
-          <Route path="products/:product" element={<AddProduct />} />
-          <Route path="brand/:id" element={<UpdateBrand />} />
-
-          <Route path="slider" element={<AdminSlider />} />
-          <Route path="slider/:id" element={<UpdateSlider />} />
->>>>>>> e772ed720c1c50ba0a23afdd5d33604b25ae3fe2
         </Route>
         {
           isAuthenticated &&
           <>
             {/* USER-ONLY ROUTES - Đã đăng nhập mới vào được */}
             <Route element={<PrivateRoute />}>
-              <Route path="/profile" element={<ProfileAccount />}>
-                <Route path=":id" element={<></>} /> {/* Thông tin tài khoản */}
+              <Route path="" element={<ProfileAccount />}>
+                <Route path="/:id/profile" element={<Profile />} /> {/* Thông tin tài khoản */}
               </Route>
             </Route>
 
@@ -103,7 +82,8 @@ const App = () => {
                 <Route path="slider" element={<AdminSlider />} />
               </Route>
             </Route>
-          </>}
+          </>
+        }
 
       </Routes >
     </>

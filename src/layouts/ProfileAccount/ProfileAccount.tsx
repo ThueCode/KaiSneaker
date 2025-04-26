@@ -14,7 +14,7 @@ const ProfileAccount = () => {
             <div className={cx('container')}>
                 <div className={cx('grid', 'wide')}>
                     <div className={cx('row')}>
-                        <h2 className={cx('title', 'col', 'l-12')}>Thông tin cá nhân</h2>
+                        <h2 className={cx('title', 'col', 'l-12')}>Thông tin tài khoản</h2>
                         <SidebarProfile />
                         <div className="col l-8">
                             <Outlet />
