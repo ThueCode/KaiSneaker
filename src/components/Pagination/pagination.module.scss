@@ -1,0 +1,11 @@
+.btn{
+    background-color: var(--black-color);
+            color: var(--white-color);
+            border-radius: 40px;
+            line-height: 40px;
+            transition: all 0.25s;
+
+            &:hover {
+                opacity: 0.8;
+            }
+}
