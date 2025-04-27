@@ -1,5 +1,5 @@
 // import Breadcrumbs from '~/components/Breadcrumbs';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 // import { useCookies } from 'react-cookie';
 import { Fade } from 'react-slideshow-image';
 import 'react-slideshow-image/dist/styles.css';
@@ -9,16 +9,28 @@ import styles from './DetailProduct.module.scss';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { NumericFormat } from 'react-number-format';
 import { Product } from '~/models/Product';
-import { fetchStockByProduct } from '~/service/api';
+import { CartDTO, createCart, fetchStockByProduct } from '~/service/api';
 import { UUID } from 'crypto';
 import { Size } from '~/models/Size';
+import { useAuth } from '~/context/AuthContext';
+import { toast } from 'react-toastify';
 
 const cx = classNames.bind(styles);
 
 const DetailProduct = () => {
-    // const [cookies, setCookie] = useCookies(['name']);
-    const [sizeData, setSizeData] = useState([]);
-    // const [stateShopping, dispatchShopping] = useReducer(shoppingCartReducer, initStateShoppingCart);
+    const [sizeData, setSizeData] = useState<Size[]>([]);
+    const { isAuthenticated, userData, fetchUserShoppingCart } = useAuth();
+    let navigate = useNavigate();
+    let location = useLocation();
+
+    const [loadingSize, setLoadingSize] = useState(true);
+    const [stateShopping, setStateShopping] = useState<CartDTO>({
+        idAccount: userData?.idAccount || "00000-00000-00000-00000-00000",
+        shoesId: location?.state?.data?.item?.shoesId,
+        idSize: "00000-00000-00000-00000-00000",
+        quantity: 1,
+    });
+
     const [productData, setProductData] = useState<Product>({
         shoesId: "-----",
         shoesName: "string",
@@ -32,60 +44,55 @@ const DetailProduct = () => {
             imageBrand: ""
         }
     });
-    const [quantity, setQuantityData] = useState(1);
-    let navigate = useNavigate();
-    let location = useLocation();
+
 
     useEffect(() => {
         if (location.state?.data?.item) {
             setProductData(location.state?.data?.item)
             getSize(location.state?.data?.item?.shoesId);
+            setStateShopping({
+                ...stateShopping,
+                shoesId: location.state?.data?.item?.shoesId
+            });
         }
     }, [location.state?.data?.item])
 
     const getSize = async (shoesId: UUID) => {
-        try {
-            await fetchStockByProduct(shoesId)
-                .then((res) => {
-                    if (res.data?.success) {
-                        setSizeData(res.data.result);
-                        // dispatchShopping(setIDSize(res.data[0].IDSIZE));
-                    }
-                });
-        } catch (error) {
+        setLoadingSize(true);  // Bắt đầu loading
+        await fetchStockByProduct(shoesId)
+            .then((res) => {
+                if (res.data?.success) {
+                    setSizeData(res.data.result);
+                    const firstAvailableSize = res.data.result.find((product: Size) => product.quantityInStock > 0);
 
+                    if (firstAvailableSize) {
+                        setStateShopping({
+                            ...stateShopping,
+                            idSize: firstAvailableSize.idSize,
+                            quantity: 1,
+                        });
+                    }
+                }
+            });
+        setLoadingSize(false); // Kết thúc loading
+
+    };
+    useEffect(() => {
+        if (isAuthenticated) {
+            setStateShopping({ ...stateShopping, idAccount: userData?.idAccount || "00000-00000-00000-00000-00000" });
+        }
+    }, [isAuthenticated, userData]);
+
+    const quantityUp = () => {
+        const currentSize = sizeData.find((product) => stateShopping.idSize === product.idSize);
+        if (currentSize && stateShopping.quantity < currentSize.quantityInStock) {
+            setStateShopping({ ...stateShopping, quantity: stateShopping.quantity + 1 });
         }
     };
 
-    useEffect(() => {
-        // try {
-        //     // if (cookies.name) {
-        //     //     dispatchShopping(setIDAccount(cookies.name.ID));
-        //     // }
-        //     // dispatchShopping(setShoesID(location.state.data.SHOESID));
-
-        // } catch (error) {
-        //     console.log(error);
-        // }
-    }, []);
-
-    const quantityUp = () => {
-        // sizeData.filter((product) => {
-        //     if (stateShopping.IDSIZE === product.IDSIZE) {
-        //         if (stateShopping.QUANTITY < product.QUANTITYINSTOCK) {
-        //             dispatchShopping(setQuantityUP());
-        //             setQuantityData(quantity + 1);
-        //         }
-        //     }
-        // });
-        setQuantityData(quantity + 1);
-
-    };
-
     const quantityDown = () => {
-        if (quantity > 1) {
-            // dispatchShopping(setQuantityDown());
-            setQuantityData(quantity - 1);
+        if (stateShopping.quantity > 1) {
+            setStateShopping({ ...stateShopping, quantity: stateShopping.quantity - 1 });
         }
     };
     const createMarkup = () => {
@@ -94,39 +101,31 @@ const DetailProduct = () => {
         };
     }
 
-    // const handleShoppingCart = () => {
-    //     try {
-    //         if (cookies.name) {
-    //             axios
-    //                 .post('http://26.17.209.162/api/shoppingcart/post', {
-    //                     type: 'create',
-    //                     data: stateShopping,
-    //                 })
-    //                 .then(async (res) => {
-    //                     if (res.data == 1) {
-    //                         alert('Thêm vào giỏ hàng thành công!!');
-    //                     } else if (res.data == -1) {
-    //                         alert('Sản phẩm đã tồn tại trong giỏ hàng!!');
-    //                     }
-    //                 });
-    //         } else {
-    //             navigate('/login');
-    //         }
-    //     } catch (error) {
-    //         console.log(error);
-    //     }
-    // };
+    const handleShoppingCart = async () => {
+        try {
+            if (isAuthenticated) {
+                const res = await createCart(stateShopping)
+                if (res.data.success) {
+                    toast.success(res.data.message);
+                    fetchUserShoppingCart();
+                }
+            } else {
+                toast.warning("Vui lòng đăng nhập để thêm vào giỏ hàng!");
+                navigate('/login');
+            }
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || "Có lỗi xảy ra khi thêm vào giỏ hàng!");
+        }
+    };
 
-    // const handleBuyNow = () => {
-    //     if (cookies.name) {
-    //         handleShoppingCart();
-    //         navigate(`/@${cookies.name.ID}/shopping-cart`);
-    //     } else {
-    //         navigate('/login');
-    //     }
-    // };
-
-    console.log(sizeData);
+    const handleBuyNow = () => {
+        if (isAuthenticated) {
+            handleShoppingCart();
+            navigate(`/@${userData?.idAccount}/shopping-cart`);
+        } else {
+            navigate('/login');
+        }
+    };
 
     return (
         <div className="grid wide">
@@ -166,19 +165,20 @@ const DetailProduct = () => {
 
                     <div className={cx('options')}>
                         <div className={cx('size')}>
-                            <label className={cx('size_heading')}>Size</label>
-                            <select
-                                className={cx('size_option')}
-                                onChange={(e) => {
-                                    // dispatchShopping(setIDSize(e.target.value));
-                                    setQuantityData(1);
-                                    // dispatchShopping(setQuantity());
-                                }}
-                            >
 
-                                {sizeData ? (
-                                    sizeData.map((size: Size, index) => {
-                                        return (
+                            {loadingSize ? (
+                                <div className={cx('size_loading')}>Đang tải size...</div>
+                            ) : sizeData.length > 0 ? (
+                                <>
+                                    <label className={cx('size_heading')}>Size</label>
+                                    <select
+                                        className={cx('size_option')}
+                                        value={stateShopping.idSize}
+                                        onChange={(e) => {
+                                            setStateShopping({ ...stateShopping, idSize: e.target.value as UUID });
+                                        }}
+                                    >
+                                        {sizeData.map((size: Size, index) => (
                                             <option
                                                 value={size?.idSize}
                                                 key={size?.idSize || index}
@@ -186,12 +186,12 @@ const DetailProduct = () => {
                                             >
                                                 {size?.sizeVi}
                                             </option>
-                                        );
-                                    })
-                                ) : (
-                                    <></>
-                                )}
-                            </select>
+                                        ))}
+                                    </select>
+                                </>
+                            ) : (
+                                <div className={cx('size_empty')}>Hết hàng</div>
+                            )}
                         </div>
                         <div className={cx('info_quantity')}>
                             <span className={cx('minus')}
@@ -199,8 +199,9 @@ const DetailProduct = () => {
                             >
                                 -
                             </span>
-                            <span className={cx('num')}>{quantity < 10 ? '0' + quantity : quantity}</span>
-                            <span className={cx('plus')}
+                            <span className={cx('num')}>{stateShopping.quantity < 10 ? '0' + stateShopping.quantity : stateShopping.quantity}</span>
+                            <span
+                                className={cx('plus')}
                                 onClick={quantityUp}
                             >
                                 +
@@ -208,18 +209,19 @@ const DetailProduct = () => {
                         </div>
                     </div>
 
-                    <div className={cx('info-btn')}>
+                    {sizeData.length > 0 && <div className={cx('info-btn')}>
                         <button className={cx('info-btn-bag')}
-                        // onClick={handleShoppingCart}
+                            onClick={handleShoppingCart}
                         >
                             Thêm vào giỏ hàng
                         </button>
                         <button className={cx('info-btn-buy')}
-                        // onClick={handleBuyNow}
+                            onClick={handleBuyNow}
                         >
                             Mua ngay
                         </button>
-                    </div>
+                    </div>}
+
                 </div>
             </div>
             <div className={cx('row', 'description')}>

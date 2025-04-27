@@ -23,7 +23,7 @@ const AdminStock = () => {
 
     const [stateStock, setStateStock] = useState<StockDTO>({
         productId: productData[0]?.shoesId,
-        sizeId: sizeData[0]?.idSize,
+        idSize: sizeData[0]?.idSize,
         quantityInStock: 0,
     });
     useEffect(() => {
@@ -36,7 +36,7 @@ const AdminStock = () => {
         setStateStock({
             ...stateStock,
             productId: productData[0]?.shoesId,
-            sizeId: sizeData[0]?.idSize,
+            idSize: sizeData[0]?.idSize,
         });
     }, [productData, sizeData]);
     const getStock = async () => {
@@ -97,7 +97,7 @@ const AdminStock = () => {
 
     const handleSubmitStock = (data: StockDTO) => {
         try {
-            if (!data.productId || !data.sizeId || !data.quantityInStock) {
+            if (!data.productId || !data.idSize || !data.quantityInStock) {
                 toast.error('Vui lòng nhập đầy đủ thông tin');
                 return;
             }
@@ -107,7 +107,7 @@ const AdminStock = () => {
                         toast.success('Thêm sản phẩm vào kho thành công!!!');
                         setStateStock({
                             productId: productData[0]?.shoesId,
-                            sizeId: sizeData[0]?.idSize,
+                            idSize: sizeData[0]?.idSize,
                             quantityInStock: 0,
                         });
                         getStock();
@@ -205,8 +205,8 @@ const AdminStock = () => {
                                 </label>
                                 <select
                                     className={cx('stock-select')}
-                                    value={stateStock.sizeId}
-                                    onChange={(e) => setStateStock({ ...stateStock, sizeId: e.target.value as UUID })}
+                                    value={stateStock.idSize}
+                                    onChange={(e) => setStateStock({ ...stateStock, idSize: e.target.value as UUID })}
                                 >
                                     {sizeData.length > 0 ? (
                                         sizeData.map((size: Size) => {

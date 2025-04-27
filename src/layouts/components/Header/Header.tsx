@@ -9,8 +9,6 @@ import Menu from '~/components/Popper/Menu/Menu';
 import Button from '~/components/Button/Button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBagShopping, faSignIn, faSignOut, faUser } from '@fortawesome/free-solid-svg-icons';
-import { useState } from 'react';
-import { useDebounce } from '~/hooks';
 import Search from '../Search/Search';
 import Navbar from '../Navbar/Navbar';
 import { useAuth } from '~/context/AuthContext';
@@ -26,11 +24,8 @@ const MENU_ITEMS = [
     },
 ];
 const Header = () => {
-    const [countShopping, setCountShopping] = useState([]);
-
-    const { logout, userData } = useAuth();
+    const { logout, userData, shoppingCartLength } = useAuth();
     const navigate = useNavigate();
-    // const debounced = useDebounce(countShopping, 500);
 
     const removeCookie = () => {
         logout();
@@ -73,7 +68,7 @@ const Header = () => {
                             className={cx('action-btn')}
                         >
                             <FontAwesomeIcon icon={faBagShopping} />
-                            <span className={cx('badge')}>{countShopping.length}</span>
+                            <span className={cx('badge')}>{shoppingCartLength}</span>
                         </Link>
                     </Tippy>
                 ) : (

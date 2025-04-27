@@ -23,7 +23,7 @@ const ItemStock: React.FC<ItemStockProps> = ({ stockItem, productData, sizeData,
     const [statusModal, setStatusModal] = useState(false);
     const [stateStock, setStateStock] = useState<StockDTO>({
         productId: stockItem?.product?.shoesId || '',
-        sizeId: stockItem?.size?.idSize || '',
+        idSize: stockItem?.size?.idSize || '',
         quantityInStock: stockItem?.quantityInStock || 0,
     });
 
@@ -150,8 +150,8 @@ const ItemStock: React.FC<ItemStockProps> = ({ stockItem, productData, sizeData,
                                 </label>
                                 <select
                                     className={cx('stock-select')}
-                                    value={stateStock.sizeId}
-                                    onChange={(e) => { setStateStock({ ...stateStock, sizeId: e.target.value as UUID }) }}
+                                    value={stateStock.idSize}
+                                    onChange={(e) => { setStateStock({ ...stateStock, idSize: e.target.value as UUID }) }}
                                 >
                                     {sizeData.length > 0 ? (
                                         sizeData.map((size) => {

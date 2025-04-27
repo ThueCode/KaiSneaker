@@ -88,7 +88,7 @@ const fetchAllSize = () => {
 
 export interface StockDTO {
     productId: UUID;
-    sizeId: UUID;
+    idSize: UUID;
     quantityInStock: number;
 }
 
@@ -172,6 +172,89 @@ const registerUser = (username: string, password: string) => {
 
 // END USER
 
+// Address User
+
+export interface ShippingInfoDTO {
+    shoppingInfoName: string;
+    shoppingInfoPhone: string;
+    address: string;
+    idAccount: UUID;
+}
+
+const fetchAllAddress = () => {
+
+    const URL_BACKEND = "/shippinginfo"
+    return axios.get(URL_BACKEND)
+}
+
+const fetchAddressByUserId = (idAccount: UUID) => {
+
+    const URL_BACKEND = `/shippinginfo/user/${idAccount}`
+    return axios.get(URL_BACKEND)
+}
+
+const createAddress = (data: ShippingInfoDTO) => {
+
+    const URL_BACKEND = `/shippinginfo`
+    return axios.post(URL_BACKEND, data)
+}
+
+const updateAddress = (idAddress: UUID, data: ShippingInfoDTO) => {
+
+    const URL_BACKEND = `/shippinginfo/${idAddress}`
+    return axios.put(URL_BACKEND, data)
+}
+const deleteAddress = (idAddress: UUID) => {
+
+    const URL_BACKEND = `/shippinginfo/${idAddress}`
+    return axios.delete(URL_BACKEND)
+}
+
+const fetchAddressById = (idAddress: UUID) => {
+    const URL_BACKEND = `/shippinginfo/${idAddress}`
+    return axios.get(URL_BACKEND)
+}
+
+// Cart( Giỏ hàng   )
+
+export interface CartDTO {
+    shoesId: UUID;
+    idSize: UUID;
+    quantity: number;
+    idAccount: UUID;
+}
+
+const fetchAllCart = () => {
+    const URL_BACKEND = "/cart"
+    return axios.get(URL_BACKEND)
+}
+
+const fetchCartByUserId = (idAccount: UUID) => {
+    const URL_BACKEND = `/cart/account/${idAccount}`
+    return axios.get(URL_BACKEND)
+}
+
+const createCart = (data: CartDTO) => {
+    const URL_BACKEND = "/cart"
+    return axios.post(URL_BACKEND, data)
+}
+
+const updateCart = (idCart: UUID, data: CartDTO) => {
+    const URL_BACKEND = `/cart/${idCart}`
+    return axios.put(URL_BACKEND, data)
+}
+
+const deleteCart = (idCart: UUID) => {
+    const URL_BACKEND = `/cart/${idCart}`
+    return axios.delete(URL_BACKEND)
+}
+
+const clearCart = (idAccount: UUID) => {
+    const URL_BACKEND = `/cart/account/${idAccount}`
+    return axios.delete(URL_BACKEND)
+}
+
+// End Cart
 export {
     fetchAllBrand, updateBrand, createBrand, deleteBrand,
 
@@ -182,5 +265,7 @@ export {
     fetchAllSize,
 
     fetchAllStock, createStock, updateStock, deleteStock, fetchStockByProduct,
-    fetchAllUser, fetchUserById, updateUser, deleteUser, registerUser, fetchUserByName
+    fetchAllUser, fetchUserById, updateUser, deleteUser, registerUser, fetchUserByName,
+    fetchAllAddress, fetchAddressById, createAddress, updateAddress, deleteAddress, fetchAddressByUserId,
+    fetchAllCart, fetchCartByUserId, createCart, updateCart, deleteCart, clearCart
 }

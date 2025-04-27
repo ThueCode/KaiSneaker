@@ -14,6 +14,12 @@
     object-fit: cover;
 }
 
+.size_empty {
+    color: var(--red-color);
+    font-size: 1.8rem;
+    font-weight: 500;
+}
+
 // Info
 .info-heading {
     margin: 10px 0;
@@ -56,9 +62,10 @@
     cursor: pointer;
 }
 
-.info-btn-bag + .info-btn-buy {
+.info-btn-bag+.info-btn-buy {
     margin-left: 8px;
 }
+
 .info-btn-buy:hover,
 .info-btn-bag:hover {
     opacity: 0.8;
@@ -105,6 +112,7 @@
     height: 40px;
     margin: 10px 0;
     align-items: center;
+
     .size {
         line-height: 40px;
 
@@ -112,6 +120,7 @@
             font-size: 1.8rem;
             font-weight: 400;
         }
+
         .size_option {
             font-size: 1.5rem;
 
@@ -121,11 +130,13 @@
             margin: 0 8px;
             outline: none;
             border: none;
+
             option:target {
                 border: none;
             }
         }
     }
+
     .info_quantity {
         height: 40px;
         background: var(--white-color);
@@ -136,6 +147,7 @@
         display: flex;
         width: 100px;
         margin-left: 16px;
+
         .minus,
         .plus,
         .num {
@@ -146,6 +158,7 @@
             font-weight: 400;
             cursor: pointer;
         }
+
         .num {
             border-right: 2px solid rgba(0, 0, 0, 0.2);
             border-left: 2px solid rgba(0, 0, 0, 0.2);

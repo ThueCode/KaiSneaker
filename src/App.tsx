@@ -25,6 +25,9 @@ import PrivateRoute from "./routes/PrivateRoute"
 import ProfileAccount from "./layouts/ProfileAccount/ProfileAccount"
 import { useAuth } from "./context/AuthContext"
 import Profile from "./page/Profile/Profile"
+import AddressProfile from "./page/AddressProfile/AddressProfile"
+import Shopping from "./components/Shopping/Shopping"
+import ShoppingCart from "./page/ShoppingCart/ShoppingCart"
 
 const App = () => {
   const brandData = useContext(BrandContext); // Lấy danh sách brand từ context
@@ -64,8 +67,14 @@ const App = () => {
             {/* USER-ONLY ROUTES - Đã đăng nhập mới vào được */}
             <Route element={<PrivateRoute />}>
               <Route path="" element={<ProfileAccount />}>
-                <Route path="/:id/profile" element={<Profile />} /> {/* Thông tin tài khoản */}
+                <Route path="/:nickname/profile" element={<Profile />} /> {/* Thông tin tài khoản */}
+                <Route path="/:nickname/address-shipping" element={<AddressProfile />} /> {/* Địa chỉ giao hàng */}
+                <Route path="/:nickname/address-shipping" element={<AddressProfile />} /> {/* Địa chỉ giao hàng */}
               </Route>
+              <Route path="/:nickname/shopping-cart" element={<ShoppingCart />} >
+                <Route path="" element={<Shopping />} /> {/* Giỏ hàng */}
+              </Route>
+
             </Route>
 
             {/* ADMIN-ONLY ROUTES - Kiểm tra quyền admin */}
