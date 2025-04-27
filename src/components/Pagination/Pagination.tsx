@@ -1,8 +1,8 @@
-import { forwardRef } from 'react';
+import React from 'react';
 import styles from './pagination.module.scss';
-import classNames from 'classnames';
-import { useState } from 'react';
-import Button from '../Button/Button';
+import classNames from 'classnames/bind';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faAnglesLeft, faAnglesRight, faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 
 interface PaginationProps {
   currentPage: number;
@@ -12,53 +12,77 @@ interface PaginationProps {
 
 const cx = classNames.bind(styles);
 
-const Pagination = forwardRef<HTMLDivElement, PaginationProps>((
-  { currentPage, totalPages, onPageChange }, ref) => {
+const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPageChange }) => {
   const handlePageChange = (page: number) => {
     if (page !== currentPage) {
       onPageChange(page);
     }
   };
 
+  const renderPageNumbers = () => {
+    const pageNumbers = [];
+    const maxPagesToShow = 5;
+    const halfRange = Math.floor(maxPagesToShow / 2);
+
+    let startPage = Math.max(1, currentPage - halfRange);
+    let endPage = Math.min(totalPages, currentPage + halfRange);
+
+    if (currentPage <= halfRange) {
+      endPage = Math.min(totalPages, maxPagesToShow);
+    } else if (currentPage + halfRange >= totalPages) {
+      startPage = Math.max(1, totalPages - maxPagesToShow + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(
+        <button
+          key={i}
+          className={cx('btn', 'btn-page', { active: currentPage === i })}
+          onClick={() => handlePageChange(i)}
+        >
+          {i}
+        </button>
+      );
+    }
+
+    return pageNumbers;
+  };
+
   return (
-    <div ref={ref} className={classNames(styles.wrapper,classNames)}>
-      {/* <div className={styles.pagination}> */}
-      {/* firts page */}
-      <span>Page {currentPage} of {totalPages}</span>
-      <span> | </span>
-      <Button className={cx('btn')} onClick={() => handlePageChange(1)} >
-        First
-      </Button>
+    <div className={cx('pagination')}>
+      {/* firs page */}
       <button
+        className={cx('btn', 'btn-page')}
+        onClick={() => handlePageChange(1)}
+        disabled={currentPage === 1}
+      >
+        <FontAwesomeIcon icon={faAnglesLeft} />
+      </button>
+      <button
+        className={cx('btn', 'btn-page')}
         onClick={() => handlePageChange(currentPage - 1)}
         disabled={currentPage === 1}
       >
-        Previous
+       <FontAwesomeIcon icon={faChevronLeft} />
       </button>
-      {Array.from({ length: totalPages }, (_, index) => (
-        <button
-          key={index + 1}
-          onClick={() => handlePageChange(index + 1)}
-          className={currentPage === index + 1 ? 'active' : ''}
-        >
-          {index + 1}
-        </button>
-      ))}
+      {renderPageNumbers()}
       <button
+        className={cx('btn', 'btn-page')}
         onClick={() => handlePageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
       >
-        Next
+        <FontAwesomeIcon icon={faChevronRight} />
       </button>
       {/* last page */}
       <button
+        className={cx('btn', 'btn-page')}
         onClick={() => handlePageChange(totalPages)}
         disabled={currentPage === totalPages}
       >
-        Last
+       <FontAwesomeIcon icon={faAnglesRight} />
       </button>
     </div>
   );
-});
+};
 
 export default Pagination;
