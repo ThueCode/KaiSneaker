@@ -9,7 +9,7 @@ export interface ShoppingCart {
         shoesName: string,
         shoesPrice: number,
         shoesDescription: string,
-        shoesImg: string[],
+        shoesImg: string,
         brandName: string;
     };
     quantity: number;

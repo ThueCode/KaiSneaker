@@ -15,6 +15,10 @@ const BrandSneaker = (props: any) => {
     const brand = props.brandName;
     const [sort, setSort] = useState('');
 
+    useEffect(() => {
+        document.title = `Sneaker ${brand}`; // cập nhật tiêu đề
+    }, []);
+
     const setSortPriceLowToHigh = () => {
         setSort('price_low_to_high');
     };

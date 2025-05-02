@@ -8,36 +8,37 @@ import Image from '~/components/Image/Image';
 import { createBrand, deleteBrand, fetchAllBrand } from '~/service/api';
 import { Brand } from '~/models/Brand';
 import { toast } from 'react-toastify';
+import { useBrand } from '~/context/BrandContext';
 
 const cx = classNames.bind(styles);
 interface BrandDTO {
-    idBrand: string,
     brandName: string,
     descriptionBrand: string,
     imageBrand: string
 }
 const CategoryAdmin = () => {
-    //check null
-    const initVal = {
-        brandName: '',
-    }
-    interface ErrorType {
-        brandName?: string;
-    }
-    const [formVal, setFormVal] = useState(initVal);
-    const [formErr, setFormErr] = useState<ErrorType>({});
-    const [isSubmit, setSubmit] = useState(false);
-    const [isContainerActive, uploadImagesetIsContainerActive] = useState(false);
+
+    useEffect(() => {
+        document.title = `Thương hiệu`; // cập nhật tiêu đề
+    }, []);
+
+
+    const { fetchBrandData } = useBrand();
+
+    const [errors, setErrors] = useState({
+        brandName: ""
+    });
     const [statusModal, setStatusModal] = useState(false);
     const [stateBrand, setStateBrand] = useState<BrandDTO>({
-        idBrand: '',
         brandName: '',
         descriptionBrand: '',
         imageBrand: ''
     });
-    const validate = (values: any) => {
-        const errs: ErrorType = {};
-        if (!values.brandName) {
+    const validateForm = () => {
+        const errs = {
+            brandName: ""
+        };
+        if (!stateBrand.brandName.trim()) {
             errs.brandName = "Không được bỏ trống tên thương hiệu"
         }
         return errs
@@ -56,36 +57,16 @@ const CategoryAdmin = () => {
     const hideBuyTickets = () => {
         // remove class open vào hàm open đã viết bên CSS
         setStatusModal(false);
+        setErrors({ brandName: "" })
+        setStateBrand({
+            brandName: '',
+            descriptionBrand: '',
+            imageBrand: ''
+        })
     };
     // End : Tickets
-    const dummyBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...";
     useEffect(() => {
-        const mockData: Brand[] = [
-            {
-                idBrand: "123-1231313-12-121-23131",
-                brandName: "Apple",
-                descriptionBrand: "Thương hiệu công nghệ nổi tiếng toàn cầu.",
-                imageBrand: dummyBase64,
-            },
-            {
-                idBrand:"123-1231313-12-121-23131",
-                brandName: "Samsung",
-                descriptionBrand: "Hãng điện tử lớn đến từ Hàn Quốc.",
-                imageBrand: dummyBase64,
-            },
-            {
-                idBrand:"123-1231313-12-121-23131",
-                brandName: "Sony",
-                descriptionBrand: "Thương hiệu nổi tiếng với thiết bị âm thanh và hình ảnh.",
-                imageBrand: dummyBase64,
-            },
-        ];
-
-        setBrandData(mockData);
         getCourses();
-        if (Object.keys(formErr).length === 0 && isSubmit) {
-            //
-        }
     }, []);
 
     const getCourses = async () => {
@@ -100,21 +81,23 @@ const CategoryAdmin = () => {
         }
     };
     //handChange
-    const handleChange = (e: any) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setFormVal({
-            ...formVal, [name]
-                : value
-        });
+        setStateBrand({ ...stateBrand, [name]: value })
     }
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        const newErrors = validateForm();
+        setErrors(newErrors);
+
+        // Nếu có lỗi thì không submit
+        if (Object.values(newErrors).some(error => error !== '')) {
+            return;
+        }
+
         await handleSubmitNewBrand(
             stateBrand
         );
-        setFormErr(validate(formVal));
-        setSubmit(true);
-
     };
 
     const handleSubmitNewBrand = (data: BrandDTO) => {
@@ -123,7 +106,8 @@ const CategoryAdmin = () => {
                 .then((res) => {
                     if (res.data?.success) {
                         toast.success('Thêm thương hiệu thành công');
-                        setStatusModal(false);
+                        hideBuyTickets();
+                        fetchBrandData();
                         getCourses();
                     } else {
                         toast.error('Thêm thương hiệu thất bại');
@@ -136,21 +120,22 @@ const CategoryAdmin = () => {
 
     const handleSubmitDeleteBrand = async (item: Brand) => {
 
-        // try {
-        //     if (window.confirm('Bạn có chắc chắn muốn xóa thương hiệu này không?')) {
-        //         await deleteBrand(item.idBrand)
-        //             .then((res) => {
-        //                 if (res.data?.success) {
-        //                     toast.success('Xóa thương hiệu thành công');
-        //                     getCourses();
-        //                 } else {
-        //                     toast.error('Xóa thương hiệu thất bại');
-        //                 }
-        //             });
-        //     }
-        // } catch (error) {
-        //     console.log(error);
-        // }
+        try {
+            if (window.confirm('Bạn có chắc chắn muốn xóa thương hiệu này không?')) {
+                await deleteBrand(item.idBrand)
+                    .then((res) => {
+                        if (res.data?.success) {
+                            toast.success('Xóa thương hiệu thành công');
+                            fetchBrandData();
+                            getCourses();
+                        } else {
+                            toast.error('Xóa thương hiệu thất bại');
+                        }
+                    });
+            }
+        } catch (error) {
+            console.log(error);
+        }
     };
 
     // Convert input sang base 64
@@ -238,8 +223,6 @@ const CategoryAdmin = () => {
                         })
                         :
                         <tr className={cx('details-content-list')}>
-
-
                             <td className={cx('details-content-item')} colSpan={4} style={{ paddingTop: '20px' }}>
                                 <h3>Không có dữ liệu</h3>
                             </td>
@@ -254,12 +237,11 @@ const CategoryAdmin = () => {
                 className={cx('modal', statusModal ? 'open' : '')}
                 // lắng nge ra ngoài ; khi click vào khoảng không của modal
                 // (ở ngoài cái ticket) sẽ ĐÓNG ticket lại
-                // modal.addEventListener('click', hideBuyTickets);
                 onClick={hideBuyTickets}
             >
                 <div
                     className={cx('modal-papes')}
-                    // ngừng việc nỗi bọt lại;  sẽ không đóng modal container lại nửa (tới đó nó bị công an chặn lại)
+                    // ngừng việc nỗi bọt lại;
                     onClick={(e) => {
                         e.stopPropagation();
                     }}
@@ -268,7 +250,7 @@ const CategoryAdmin = () => {
                         <h2 className={cx('modal__heading')}>Thêm thương hiệu</h2>
                         <FontAwesomeIcon
                             className={cx('modal-header-icon--close')}
-                            // nge hành vi click vào button close
+                            // nghe hành vi click vào button close
                             onClick={hideBuyTickets}
                             icon={faXmark}
                         />
@@ -282,6 +264,7 @@ const CategoryAdmin = () => {
                                     <input
                                         className={cx('upload')}
                                         type="file"
+                                        accept="image/*" // Chỉ chấp nhận hình ảnh
                                         disabled={stateBrand?.imageBrand ? true : false}
                                         onChange={(e) => uploadImage(e)}
                                     />
@@ -317,15 +300,19 @@ const CategoryAdmin = () => {
                         <input
                             className={cx('input-item')}
                             type="text"
-                            // required
-                            value={formVal.brandName}
+                            value={stateBrand.brandName}
                             name='brandName'
                             onChange={(e) => {
                                 handleChange(e);
-                                setStateBrand({ ...stateBrand, brandName: e.target.value })
+                                if (!e.target.value.trim()) {
+                                    setErrors({ brandName: "Không được bỏ trống tên thương hiệu" });
+                                } else {
+                                    setErrors({ brandName: "" });
+                                }
                             }}
                         />
-                        <p style={{ color: "red" }}>{formErr.brandName}</p>
+                        {errors.brandName && <small className={cx("error_message")}>{errors.brandName}</small>}
+
                         <label htmlFor="" className={cx('input-label')}>
                             Mô tả thương hiệu
                         </label>
@@ -333,9 +320,10 @@ const CategoryAdmin = () => {
                             className={cx('input-item-description')}
                             cols={54}
                             rows={10}
+                            value={stateBrand.descriptionBrand}
                             onChange={(e) => setStateBrand({ ...stateBrand, descriptionBrand: e.target.value })}
                         />
-                        <button className={cx('btn')}>Save</button>
+                        <button className={cx('btn')} type='submit'>Save</button>
                     </form>
                 </div>
             </div>

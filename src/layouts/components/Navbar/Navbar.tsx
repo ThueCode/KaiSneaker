@@ -1,14 +1,13 @@
 import classNames from 'classnames/bind';
 import styles from './navbar.module.scss';
 import { Link, useLocation } from 'react-router-dom';
-import { useContext } from 'react';
-import { BrandContext } from '~/context/BrandContext';
+import { useBrand } from '~/context/BrandContext';
 
 const cx = classNames.bind(styles);
 
 const Navbar = () => {
 
-    const navData = useContext(BrandContext);
+    const { brandData } = useBrand(); // Lấy danh sách brand từ context
     const location = useLocation();
 
     return (
@@ -27,8 +26,8 @@ const Navbar = () => {
                     Sneaker
                 </Link>
             </li>
-            {navData ? (
-                navData.map((nav) => (
+            {brandData ? (
+                brandData.map((nav) => (
                     <li className={cx('navbar-item', {
                         active: location.pathname === `/sneaker/${nav.brandName.toLowerCase()}`
                     })} key={nav.idBrand}>

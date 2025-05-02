@@ -4,46 +4,63 @@ import styles from './adminSlider.module.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowUp, faXmark } from '@fortawesome/free-solid-svg-icons';
 import Button from '../Button/Button';
-import { useLocation } from 'react-router';
+import { Slide } from '~/models/Slide';
+import { createSlide, deleteSlide, fetchAllSlide, SliderDTO } from '~/service/api';
+import { toast } from 'react-toastify';
+import { UUID } from 'crypto';
 
 const cx = classNames.bind(styles);
-interface SliderDTO {
-    slideId: number;
-    imageUrl: string;
-    description: string;
-    order: number;
-}
+
 const AdminSlider = () => {
 
-    let location = useLocation();
+    useEffect(() => {
+        document.title = `Slider`; // cập nhật tiêu đề
+    }, []);
+
     const [sliderModal, setSliderModal] = useState(false);
-    const [sliderDataState, setSliderDataState] = useState<SliderDTO[]>([]);
+    const [sliderData, setSliderData] = useState<Slide[]>([]);
+
     //------ sài ticket
     const showBuyTickets = () => {
         setSliderModal(true);
+
     }
     const hideBuyTickets = () => {
         setSliderModal(false);
+        setSliderDataState({
+            imageUrl: "",
+            description: "",
+            order: 1,
+        })
+        setErrors({
+            order: "",
+            imageUrl: ""
+        })
     }
     //------
 
-    // const [stateSlide, dispatchSlide] = useReducer(slideReducer, initStateSlide);
-    const [sliderData, setSliderData] = useState<SliderDTO>({
-        slideId: 0,
+    const [sliderDataState, setSliderDataState] = useState<SliderDTO>({
         imageUrl: "",
         description: "",
-        order: 0,
+        order: 1,
     });
-    //----------convert base64
+
+    // State lưu trữ lỗi
+    const [errors, setErrors] = useState({
+        imageUrl: '',
+        order: '',
+    });
+
     const uploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
             try {
                 const base64 = await convertBase64(file);
-                setSliderData((prev) => ({
+                setSliderDataState((prev) => ({
                     ...prev,
                     imageUrl: base64 as string,
                 }));
+                setErrors(prev => ({ ...prev, imageUrl: "" }));
             } catch (error) {
                 console.log(error);
             }
@@ -51,40 +68,23 @@ const AdminSlider = () => {
             return;
         }
     }
-    // ------fetch data ảo
 
-    const dummyBase64 =
-        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."; // thay bằng base64 thật
-
-    //----------------------
     useEffect(() => {
-        // axios.get(`http://26.17.209.162/api/image/get`).then((res) => {
-        //     setSliderData(res.data);
-        //     dispatchSlide(addSlide(res.data));
-        // });
-        const mockSliderData: SliderDTO[] = [
-            {
-                slideId: 1,
-                imageUrl: dummyBase64,
-                description: "Khuyến mãi hè rực cháy!",
-                order: 1,
-            },
-            {
-                slideId: 2,
-                imageUrl: dummyBase64,
-                description: "Giảm giá lên tới 50%",
-                order: 2,
-            },
-            {
-                slideId: 3,
-                imageUrl: dummyBase64,
-                description: "Hàng mới về cực hot",
-                order: 3,
-            },
-        ];
-
-        setSliderDataState(mockSliderData);
+        getSlide()
     }, []);
+
+    const getSlide = async () => {
+        try {
+            const res = await fetchAllSlide();
+            if (res.data.success) {
+                console.log(res.data);
+                setSliderData(res.data.result)
+            }
+        } catch (error) {
+            console.log(error);
+
+        }
+    }
 
     const convertBase64 = (file: File) => {
         return new Promise((resolve, reject) => {
@@ -101,54 +101,70 @@ const AdminSlider = () => {
         });
     };
 
-    // const handleSubmit = async (e) => {
-    //     e.preventDefault();
-    //     await handleSubmitSlide({
-    //         stateSlide,
-    //     });
-    // };
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
 
-    // const handleSubmitSlide = (data) => {
-    //     try {
-    //         axios
-    //             .post('http://26.17.209.162/api/image/post', {
-    //                 type: 'update',
-    //                 data: stateSlide,
-    //             })
-    //             .then((res) => {
-    //                 if (res.data == 1) {
-    //                     alert('Cập nhật Slider thành công');
-    //                     window.location.reload();
-    //                 } else if (res.data == -1) {
-    //                     alert('Cập nhật Slider thất bại');
-    //                 }
-    //             });
-    //     } catch (error) {
-    //         console.log(error);
-    //     }
-    // };
+        // Kiểm tra nếu order < 1
+        if (sliderDataState.order < 1) {
+            setErrors(prev => ({ ...prev, order: "Vị trí ưu tiên phải lớn hơn hoặc bằng 1" }));
+            return;
+        } else {
+            setErrors(prev => ({ ...prev, order: '' })); // Xóa lỗi khi order hợp lệ
+        }
 
-    // const checkChangeSlide = () => {
-    //     if (JSON.stringify(sliderData[0]) === JSON.stringify(stateSlide)) {
-    //         return true;
-    //     } else {
-    //         return false;
-    //     }
-    // };
+        // Kiểm tra nếu không có ảnh
+        if (!sliderDataState.imageUrl) {
+            setErrors(prev => ({ ...prev, imageUrl: "Ảnh không được để trống" }));
+            return;
+        } else {
+            setErrors(prev => ({ ...prev, imageUrl: "" }));
+        }
+
+
+        await handleSubmitSlide(
+            sliderDataState
+        );
+    };
+
+    const handleSubmitSlide = async (data: SliderDTO) => {
+        try {
+            const res = await createSlide(data)
+            if (res.data.success) {
+                getSlide();
+
+                hideBuyTickets();
+                toast.success("Thêm slider thành công");
+            }
+        } catch (error) {
+            toast.error("Thêm slider thất bại");
+        }
+    };
+
+
+    const handleDeleteSlider = async (idSlide: UUID) => {
+        if (window.confirm('Bạn có chắc chắn muốn xóa Slide này ? ')) {
+            const res = await deleteSlide(idSlide);
+            if (res.data.success) {
+                toast.success("Xóa Slide thành công");
+                hideBuyTickets();
+                getSlide();
+            } else {
+                toast.success("Xóa Slide thất bại");
+            }
+
+        }
+    }
 
     return (
         <>
             <div className={cx('wrapper')}>
                 <div className={cx('inner')}>
                     <h2 className={cx('heading')}>
-                        {location.state?.data ? "Cập nhật Slider" : "Thêm Slider"}
+                        Chỉnh sửa Slider
                     </h2>
                     <button className={cx('slider-create-btn')} onClick={showBuyTickets}>
                         Thêm mới
                     </button>
-                </div>
-                <div className={cx('inner')}>
-                    {/* <h2 className={cx('heading')}>Chỉnh sửa Slider</h2> */}
                 </div>
                 <table className={cx('details-table')}>
                     <thead className={cx('details-thead')}>
@@ -159,10 +175,10 @@ const AdminSlider = () => {
                         </tr>
                     </thead>
                     <tbody className={cx('details-tbody')} >
-                        {sliderDataState.length > 0 ?
-                            sliderDataState.map((item) => {
+                        {sliderData ?
+                            sliderData.map((item: Slide) => {
                                 return (
-                                    <tr className={cx('details-content-list')} key={item.order}>
+                                    <tr className={cx('details-content-list')} key={item.slideId}>
                                         <td className={cx('details-content-item')}>
                                             <div className={cx('details-content-item-priority')}>
                                                 {item.order}
@@ -171,20 +187,13 @@ const AdminSlider = () => {
                                         <td className={cx('details-content-item')}>
                                             <img
                                                 className={cx('details-content-item-img')}
-                                                src={item?.imageUrl ? item.imageUrl : ''}
+                                                src={item?.imageUrl}
                                             ></img>
                                         </td>
                                         <td className={cx('details-content-item')}>
                                             <Button
-                                                to={`/admin/slider/${item.slideId}`}
-                                                state={{ data: item }}
                                                 className={cx('details-content-item-btn')}
-                                            >
-                                                Sửa
-                                            </Button>
-                                            <Button
-                                                className={cx('details-content-item-btn')}
-                                            // onClick={() => handleSubmitDeleteBrand(item)}
+                                                onClick={() => handleDeleteSlider(item.slideId)}
                                             >
                                                 Xóa
                                             </Button>
@@ -194,45 +203,6 @@ const AdminSlider = () => {
                             }) : <></>}
                     </tbody>
                 </table>
-                {/* <form className={cx('inner_img')}
-                    // onSubmit={handleSubmit}
-                    >
-                        <div className={cx('upload_box')}>
-                            <div className={cx('file_upload')}>
-                                <input
-                                    type="file"
-                                    className={cx('upload')}
-                                // disabled={stateSlide.IMAGESHOES1}
-                                // onChange={(e) => uploadImage(e, setIMG1)}
-                                />
-                                <FontAwesomeIcon
-                                    icon={faArrowUp}
-                                // className={cx(stateSlide.IMAGESHOES1 ? 'fadeout' : '')}
-                                ></FontAwesomeIcon>
-                                <div className={cx('img_box',)
-                                    // stateSlide.IMAGESHOES1 != '' ? 'fadein' : '')
-                                }>
-                                    <img alt="" className={cx('img')}
-                                    // src={stateSlide.IMAGESHOES1} 
-                                    />
-                                    <div className={cx('delete_box',)
-                                        // stateSlide.IMAGESHOES1 != '' ? 'active' : '')
-                                    }>
-                                        <FontAwesomeIcon
-                                            icon={faXmark}
-                                            className={cx('btn_delete')}
-                                        // onClick={(e) => dispatchSlide(deleteImg1())}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <button className={cx('btn_update')}
-                        // disabled={checkChangeSlide()}
-                        >
-                            Update
-                        </button>
-                    </form> */}
             </div>
             {/* <!-- End adminCategoriesTable --> */}
             {/* <!--Begin Modal --> */}
@@ -240,7 +210,6 @@ const AdminSlider = () => {
                 className={cx('modal', sliderModal ? 'open' : '')}
                 // lắng nge ra ngoài ; khi click vào khoảng không của modal
                 // (ở ngoài cái ticket) sẽ ĐÓNG ticket lại
-                // modal.addEventListener('click', hideBuyTickets);
                 onClick={hideBuyTickets}
             >
                 <div
@@ -254,13 +223,13 @@ const AdminSlider = () => {
                         <h2 className={cx('modal__heading')}>Vui lòng chọn ảnh slider</h2>
                         <FontAwesomeIcon
                             className={cx('modal-header-icon--close')}
-                            // nge hành vi click vào button close
+                            // nghe hành vi click vào button close
                             onClick={hideBuyTickets}
                             icon={faXmark}
                         />
                     </div>
                     <form className={cx('category-list')}
-                    // onSubmit={handleSubmit}
+                        onSubmit={handleSubmit}
                     >
                         <div className={cx('slider_img')}>
                             <div className={cx('img_item')}>
@@ -268,35 +237,77 @@ const AdminSlider = () => {
                                     <input
                                         className={cx('upload')}
                                         type="file"
-                                        disabled={sliderData?.imageUrl ? true : false}
+                                        accept="image/*" // Chỉ chấp nhận hình ảnh
+
+                                        disabled={sliderDataState?.imageUrl ? true : false}
                                         onChange={(e) => uploadImage(e)}
                                     />
                                     <FontAwesomeIcon
                                         icon={faArrowUp}
-                                        className={cx(sliderData?.imageUrl ? 'fadeout' : '')}
+                                        className={cx(sliderDataState?.imageUrl ? 'fadeout' : '')}
                                     ></FontAwesomeIcon>
                                     <div className={cx('img_box',
-                                        sliderData?.imageUrl ? 'fadein' : ''
+                                        sliderDataState?.imageUrl ? 'fadein' : ''
                                     )}>
                                         <img
-                                            alt={sliderData?.description ? sliderData?.description : ''}
+                                            alt={sliderDataState?.description ? sliderDataState?.description : ''}
                                             className={cx('img')}
-                                            src={sliderData?.imageUrl ? sliderData.imageUrl : ''}
+                                            src={sliderDataState?.imageUrl ? sliderDataState.imageUrl : ''}
                                         />
                                         <div className={cx('delete_box',
-                                            sliderData?.imageUrl ? 'active' : ''
+                                            sliderDataState?.imageUrl ? 'active' : ''
                                         )}>
                                             <FontAwesomeIcon
                                                 icon={faXmark}
                                                 className={cx('btn_delete')}
-                                                onClick={() => setSliderData({ ...sliderData, imageUrl: "" })}
+                                                onClick={() => setSliderDataState({ ...sliderDataState, imageUrl: "" })}
                                             />
+
                                         </div>
                                     </div>
                                 </div>
+                                {errors.imageUrl && <p className={cx('error-message')}>{errors.imageUrl}</p>}
+
                             </div>
                         </div>
-                        <button className={cx('btn')}>Save</button>
+                        <label htmlFor="" className={cx('input-label')}>
+                            Vị trí ưu tiên <b>*</b>
+                        </label>
+                        <input
+                            className={cx('input-item')}
+                            type="text"
+                            required
+                            maxLength={2}
+                            value={sliderDataState.order}
+                            name='order'
+                            onKeyPress={(event) => {
+                                if (!/[0-9]/.test(event.key)) {
+                                    event.preventDefault();
+                                }
+                            }}
+                            onChange={(e) => {
+                                setSliderDataState({ ...sliderDataState, order: +e.target.value });
+                                if (+e.target.value < 1) {
+                                    setErrors(prev => ({ ...prev, order: "Vị trí ưu tiên phải lớn hơn hoặc bằng 1" }));
+                                } else {
+                                    setErrors(prev => ({ ...prev, order: '' }));
+                                }
+                            }}
+                        />
+                        {errors.order && <p className={cx('error-message')}>{errors.order}</p>}
+                        <label htmlFor="" className={cx('input-label')}>
+                            Mô tả Slider
+                        </label>
+                        <textarea
+                            className={cx('input-item-description')}
+                            cols={54}
+                            rows={10}
+                            value={sliderDataState.description}
+
+                            onChange={(e) => {
+                                setSliderDataState({ ...sliderDataState, description: e.target.value })
+                            }} />
+                        <button className={cx('btn')} type='submit'>Save</button>
                     </form>
                 </div>
             </div>

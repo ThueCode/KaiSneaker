@@ -8,6 +8,7 @@
     background: #fefffa;
     display: flex;
     justify-content: space-between;
+
     .wrap {
         .inner {
             .heading {
@@ -19,10 +20,12 @@
 
             .address {
                 margin-top: 16px;
+
                 .actions {
                     margin-right: 48px;
                     display: flex;
                     flex-direction: row-reverse;
+
                     .btn_ctn,
                     .btn_add {
                         padding: 10px 16px;
@@ -32,6 +35,7 @@
                         margin: 10px;
                         font-size: 1.6rem;
                         transition: all 0.25s;
+
                         &:active {
                             transform: scale(0.95);
                         }
@@ -51,10 +55,12 @@
                 padding: 8px;
                 border-bottom: 1px solid rgba(0, 0, 0, 0.2);
             }
+
             .payment_container {
                 width: 100%;
                 margin: auto;
             }
+
             .payment_container {
                 .payment_content {
                     width: 98%;
@@ -96,17 +102,17 @@
                 float: right;
             }
 
-            .payment_container .payment_input:checked + .payment-item_title {
+            .payment_container .payment_input:checked+.payment-item_title {
                 background-color: rgba(255, 255, 255, 0.15);
             }
 
-            .payment_container .payment_input:checked + .payment-item_title:before {
+            .payment_container .payment_input:checked+.payment-item_title:before {
                 font-family: 'FontAwesome';
                 content: '\f00d';
                 transition: 0.5s;
             }
 
-            .payment_container .payment_input:checked ~ .acc-body {
+            .payment_container .payment_input:checked~.acc-body {
                 height: auto;
                 color: #fff;
                 font-size: 16px;
@@ -158,26 +164,36 @@
         .product_checkout {
             margin-top: 16px;
             padding-top: 16px;
+
             .product_item {
                 margin: 8px;
                 height: 200px;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
+
                 .product_img {
                     width: 50%;
                 }
+
                 .product_content-box {
                     display: flex;
                     margin-left: 8px;
                     flex-direction: column;
+
                     .product_content {
+                        &:first-child {
+                            font-weight: 500;
+                            text-align: justify;
+                        }
+
                         margin: 2px 0;
                         font-size: 1.5rem;
                         font-weight: 400;
                     }
                 }
-                + .product_item {
+
+                +.product_item {
                     border-top: 1px solid rgba(0, 0, 0, 0.2);
                 }
             }
@@ -187,17 +203,19 @@
 
 .rdo-address {
     display: none;
-    &:not(:disabled) ~ .address_item {
+
+    &:not(:disabled)~.address_item {
         cursor: pointer;
     }
-    &:disabled ~ .address_item {
+
+    &:disabled~.address_item {
         color: hsla(150, 5%, 75%, 1);
         border-color: hsla(150, 5%, 75%, 1);
         box-shadow: none;
         cursor: not-allowed;
     }
 
-    &:checked + .address_item {
+    &:checked+.address_item {
         border: 2px solid black;
         box-shadow: 0px 0px 20px -10px black;
     }
@@ -226,7 +244,7 @@
     right: 0;
     left: 0;
     display: block;
-    z-index: 12;
+    z-index: 20;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -234,7 +252,7 @@
 
     .modal-detail {
         width: 600px;
-        height: 350px;
+        padding: 8px;
         background-color: #fff;
         border-radius: 20px;
 
@@ -263,6 +281,7 @@
         .stock-list {
             font-size: 1.4rem;
             text-align: center;
+
             .info {
                 .stock-select {
                     width: 460px;
@@ -270,6 +289,7 @@
                     margin-bottom: 8px;
                     border-radius: 8px;
                 }
+
                 .input-label {
                     margin-left: 18px;
                     font-size: 1.4rem;
@@ -282,6 +302,7 @@
                 .mt-10 {
                     margin-top: -10px;
                 }
+
                 .input-item {
                     color: var(--black1-color);
                     font-size: 1.4rem;
@@ -305,13 +326,23 @@
             border: none;
             color: white;
             transition: all 0.25s;
-        }
-
-        .btn:hover {
             cursor: pointer;
-            opacity: 0.8;
+
+            &:active {
+                transform: scale(0.95);
+            }
+
+            &:hover {
+                opacity: 0.8;
+            }
         }
     }
+}
+
+.error_message {
+    color: var(--red-color);
+    font-size: 12px;
+    font-weight: 500;
 }
 
 .modal.open {

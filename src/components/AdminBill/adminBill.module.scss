@@ -19,6 +19,7 @@
         padding: 2px 0;
         text-align: center;
         color: var(--black-color);
+
         .details-content-select {
             font-size: 1.6rem;
             padding: 4px 0;
@@ -41,7 +42,7 @@
     color: var(--black1-color);
 }
 
-.details-tbody + .details-tbody {
+.details-tbody+.details-tbody {
     border-top: 1px solid rgba(0, 0, 0, 12%);
 }
 
@@ -63,6 +64,7 @@
 .details-content-item-btn {
     padding: 8px 8px;
     border: none;
+    height: 30px;
     background-color: black;
     border-radius: 20px;
     font-weight: 400 !important;

@@ -21,89 +21,54 @@ const AddProduct = () => {
     const [brandData, setBrandData] = useState<Brand[]>([]);
     let location = useLocation();
     let navigate = useNavigate();
-    const initVal = {
-        productName: "",
-        printPrice: 0,
-        productDescription: "",
-        productImg: [],
-        brand: {
-            idBrand: '----',
-        }
-    }
-    interface ErrProduct {
-        productName: string,
-        printPrice: string,
-        productDescription: string,
-        productImg: string[],
-        brand: {
-            idBrand: string,
-        }
 
-    }
-    const [formVal, setFormVal] = useState(initVal);
-    const [errVal, setErrVal] = useState<ErrProduct>({
-        productName: "",
-        printPrice: "",
-        productDescription: "",
-        productImg: [],
-        brand: {
-            idBrand: '----',
-        }
-    })
-    const validate = (values: any) => {
-        const errors: ErrProduct = {
-            productName: "",
-            printPrice: "",
-            productDescription: "",
-            productImg: [],
-            brand: {
-                idBrand: '----',
-            }
-        };
-        if (!values.productName) {
-            errors.productName = "Tên sản phẩm không được để trống";
-        }
-        if (!values.printPrice) {
-            errors.printPrice = "Giá sản phẩm không được để trống";
-        } else if (values.printPrice < 0) {
-            errors.printPrice = "Giá sản phẩm không hợp lệ";
-        }
-        if (!values.productDescription) {
-            errors.productDescription = "Mô tả sản phẩm không được để trống";
-        }
-        if (values.brand.idBrand === '----') {
-            errors.brand.idBrand = "Vui lòng chọn thương hiệu";
-        }
-        return errors;
-    };
-    const [err, setErr] = useState<ErrProduct>({
-        productName: "",
-        printPrice: "",
-        productDescription: "",
-        productImg: [],
-        brand: {
-            idBrand: '----',
-        }
-    })
-    const [isSubmit, setIsSubmit] = useState(false);
-    const handleChange = (e: any) => {
-        const { name, value } = e.target;
-        setFormVal({ ...formVal, [name]: value });
-        setErrVal({ ...errVal, [name]: "" });
-    }
-    // const handleSubmit = (e: any) => {
+    useEffect(() => {
+        document.title = `Thêm sản phẩm`; // cập nhật tiêu đề
+    }, []);
 
-    // }
-    // `
     const [dataProduct, setDataProduct] = useState<ProductDTO>({
         shoesName: "",
         shoesPrice: 0,
-        shoesDescription: "string",
+        shoesDescription: "",
         shoesImg: [],
         brand: {
             idBrand: '----',
         }
     });
+
+    const [errVal, setErrVal] = useState({
+        shoesName: "",
+        shoesPrice: "",
+        brand: ""
+    })
+    const validateForm = () => {
+        const errors = {
+            shoesName: "",
+            shoesPrice: "",
+            brand: ""
+        };
+        if (!dataProduct.shoesName.trim()) {
+            errors.shoesName = "Tên sản phẩm không được để trống";
+        }
+        if (!dataProduct.shoesPrice) {
+            errors.shoesPrice = "Giá sản phẩm không được để trống";
+        } else if (dataProduct.shoesPrice <= 0) {
+            errors.shoesPrice = "Giá sản phẩm phải lớn hơn 0";
+        }
+
+        if (dataProduct.brand.idBrand === '----') {
+            errors.brand = "Vui lòng chọn thương hiệu";
+        }
+
+        return errors;
+    };
+
+    const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setDataProduct({ ...dataProduct, [name]: value })
+    }
+
+
     const getBrand = async () => {
         try {
             const isNewItemPage = location.pathname.endsWith('/new-item');
@@ -129,16 +94,33 @@ const AddProduct = () => {
         }
     }
     useEffect(() => {
-        if (Object.keys(errVal).length > 0 && isSubmit) {
-            if (Object.values(errVal).every((val) => val === "")) {
-                console.log("Form is valid, proceed with submission.");
-            }
-        }
+
         if (!location.state?.data?.shoesId && !location.pathname.endsWith('/new-item')) {
             navigate("/admin/products")
         }
         getBrand();
     }, [])
+
+    const handleCreateProduct = async (data: ProductDTO) => {
+
+        try {
+            const res = await createProduct(data)
+            if (res.data.success) {
+                toast.success("Thêm sản phẩm thành công!!!");
+                setErrVal({
+                    shoesName: "",
+                    shoesPrice: "",
+                    brand: ""
+                })
+                navigate('/admin/products');
+            }
+
+        } catch (error: any) {
+            console.log(error.response.data.message);
+            toast.error('Thêm sản phẩm thất bại !!!');
+
+        }
+    };
 
     const handleSubmitUpdateProduct = async (idProduct: UUID, data: ProductDTO) => {
 
@@ -146,6 +128,11 @@ const AddProduct = () => {
             const res = await updateProduct(idProduct, data)
             if (res.data.success) {
                 toast.success('Cập nhật sản phẩm thành công !!!');
+                setErrVal({
+                    shoesName: "",
+                    shoesPrice: "",
+                    brand: ""
+                })
                 navigate('/admin/products');
             }
 
@@ -158,33 +145,25 @@ const AddProduct = () => {
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        e.preventDefault();
-        setErrVal(validate(formVal));
-        setIsSubmit(true);
-        // const idProduct: UUID = location?.state?.data.shoesId;
+        const idProduct: UUID = location?.state?.data.shoesId;
 
-        // if (location.state?.data) {
-        //     handleSubmitUpdateProduct(idProduct, dataProduct)
-        // }
-        // else {
-        //     handleCreateProduct(dataProduct);
-        // }
-    };
+        const newErrors = validateForm();
+        setErrVal(newErrors);
 
-    const handleCreateProduct = async (data: ProductDTO) => {
-        try {
-            await createProduct(data)
-                .then((res) => {
-                    if (res.data?.success) {
-                        toast.success("Thêm sản phẩm thành công!!!");
-                        navigate("/admin/products")
-                    }
-                });
-        } catch (error) {
-            toast.error("Thêm sản phẩm thất bại!!!");
-            console.log(error);
+        // Nếu có lỗi thì không submit
+        if (Object.values(newErrors).some(error => error !== '')) {
+            return;
+        }
+
+        if (location.state?.data.shoesId) {
+            handleSubmitUpdateProduct(idProduct, dataProduct)
+        }
+        else {
+            handleCreateProduct(dataProduct);
         }
     };
+
+
 
     // Convert input sang base 64
     const uploadImage = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
@@ -228,6 +207,7 @@ const AddProduct = () => {
                         <input
                             className={cx('upload')}
                             type="file"
+                            accept="image/png" // Chỉ chấp nhận hình ảnh
                             disabled={dataProduct?.shoesImg[i] ? true : false}
                             onChange={(e) => uploadImage(e, i)}
                         />
@@ -298,13 +278,11 @@ const AddProduct = () => {
                                 className={cx('info-txt')}
                                 type="text"
                                 id="name"
-                                // required
-                                value={formVal.productName}
-                                // placeholder="Tên sản phẩm"
-                                name='productName'
-                                onChange={(e) => handleChange(e)}
+                                value={dataProduct.shoesName}
+                                name='shoesName'
+                                onChange={(e) => handleChangeInput(e)}
                             />
-                            <span style={{ color: "red" }} className={cx('error')}>{errVal.productName}</span>
+                            {errVal.shoesName && <small className={cx("error_message")}>{errVal.shoesName}</small>}
                         </div>
                     </div>
                     <div className={cx('group')}>
@@ -314,27 +292,20 @@ const AddProduct = () => {
                             </label>
                             <input
                                 className={cx('info-txt')}
-                                type="text"
+                                type="number"
                                 id="price"
-                                // required
-                                name='printPrice'
-                                value={formVal.printPrice}
-                                // value={dataProduct?.shoesPrice}
-                                // placeholder="Giá tiền"
-                                // onChange={(e) => setDataProduct({ ...dataProduct, shoesPrice: +e.target.value })}
-                                // onKeyPress={(event) => {
-                                //     if (!/[0-9]/.test(event.key)) {
-                                //         event.preventDefault();
-                                //     }
-                                // }}
-                                onChange={(e) => handleChange(e)}
+                                name='shoesPrice'
+                                min={0}
+                                value={dataProduct.shoesPrice}
+                                onChange={(e) => handleChangeInput(e)}
                                 onKeyPress={(event) => {
                                     if (!/[0-9]/.test(event.key)) {
                                         event.preventDefault();
                                     }
                                 }}
                             />
-                            <span style={{ color: "red" }} className={cx('error')}>{errVal.printPrice}</span>
+                            {errVal.shoesPrice && <small className={cx("error_message")}>{errVal.shoesPrice}</small>}
+
                         </div>
                         <div className={cx('select-box')}>
                             <input type="checkbox" className={cx('select_view')} />
@@ -366,14 +337,11 @@ const AddProduct = () => {
                                                     name="brand"
                                                     value={brand.idBrand}
                                                     checked={dataProduct.brand.idBrand === brand.idBrand}
-
-                                                    required
                                                     onChange={(e) => setDataProduct({ ...dataProduct, brand: { ...dataProduct.brand, idBrand: e.target.value as UUID } })}
                                                 />
                                                 <input
                                                     className={cx('s-c', 'bottom')}
                                                     type="radio"
-                                                    required
                                                     name="brand"
                                                     value={brand.idBrand}
                                                     checked={dataProduct.brand.idBrand === brand.idBrand}
@@ -397,8 +365,10 @@ const AddProduct = () => {
                                     <></>
                                 )}
                                 <div className={cx('option-bg')}></div>
+
                             </div>
-                            <span style={{ color: "red" }} className={cx('error')}>{errVal.brand.idBrand}</span>
+                            {errVal.brand && <small className={cx("error_message")}>{errVal.brand}</small>}
+
                         </div>
                     </div>
                     <div className={cx('description')}>
@@ -408,7 +378,6 @@ const AddProduct = () => {
                                 <CKEditor
                                     editor={ClassicEditor as any}
                                     data={location.state?.data ? location.state?.data?.shoesDescription : ''}
-                                    // data
                                     onChange={(e, editor: any) => {
                                         const data = editor.getData();
                                         setDataProduct({ ...dataProduct, shoesDescription: data });
@@ -418,7 +387,6 @@ const AddProduct = () => {
 
                         </div>
                     </div>
-                    {/* <span style={{ color: "red", margin: "5%" }} className={cx('error')}>{errVal.productDescription}</span> */}
                     <div className={cx('product_img')}>
                         {loadViewImgItem()}
                     </div>

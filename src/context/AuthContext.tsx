@@ -13,13 +13,13 @@ type AuthContextType = {
   logout: () => void; // Hàm đăng xuất
   shoppingCartLength: number; // Số lượng sản phẩm trong giỏ hàng
   fetchUserShoppingCart: () => Promise<void>; // Hàm lấy giỏ hàng của người dùng
+  fetchUserData: () => Promise<void>; // Hàm lấy thông tin của người dùng
 };
 
 
 // 👉 Tạo context để chia sẻ trạng thái đăng nhập
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// 👉 Provider bao bọc toàn bộ ứng dụng để chia sẻ context
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const [isAuthenticated, setIsAuthenticated] = useState(false); // Trạng thái đăng nhập
@@ -43,7 +43,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const res = await fetchUserByName(decoded.sub || "");
         if (res.data.success) {
           setUserData(res.data.result);
-          // Lưu thông tin người dùng vào state
         }
       }
     } else {
@@ -61,7 +60,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
       } catch (error: any) {
-        console.log("Errors: ", error.response?.data?.message || error);
+        setShoppingCartLength(0);
 
       }
     }
@@ -96,7 +95,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ userData, isAuthenticated, login, logout, shoppingCartLength, fetchUserShoppingCart }}>
+    <AuthContext.Provider value={{ userData, isAuthenticated, login, logout, shoppingCartLength, fetchUserShoppingCart, fetchUserData }}>
       {children}
     </AuthContext.Provider>
   );

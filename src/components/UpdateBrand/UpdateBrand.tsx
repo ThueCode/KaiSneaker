@@ -19,7 +19,7 @@ const UpdateBrand = () => {
     const navigate = useNavigate();
 
     const [stateBrand, setStateBrand] = useState<Brand>(location.state?.data);
-    const [brandData, setBrandData] = useState([location.state?.data]);
+    const brandData = [location.state?.data]
 
 
     useEffect(() => {
@@ -116,6 +116,7 @@ const UpdateBrand = () => {
                                     <input
                                         className={cx('upload')}
                                         type="file"
+                                        accept="image/*" // Chỉ chấp nhận hình ảnh
                                         disabled={stateBrand?.imageBrand ? true : false}
                                         onChange={(e) => uploadImage(e)}
                                     />

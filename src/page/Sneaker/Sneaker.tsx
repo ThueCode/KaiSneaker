@@ -10,14 +10,15 @@ import { fetchAllProduct } from '~/service/api';
 const cx = classNames.bind(styles);
 
 const Sneaker = () => {
+
+    useEffect(() => {
+        document.title = `Sneaker`; // cập nhật tiêu đề
+    }, []);
+
     const [error, setError] = useState<boolean>(false);
     const [isLoaded, setIsLoaded] = useState(false);
     const [items, setItems] = useState<Product[]>([]);
     const [sort, setSort] = useState('');
-
-    // Note: the empty deps array [] means
-    // this useEffect will run once
-    // similar to componentDidMount()
 
     const setSortPriceLowToHigh = () => {
         setSort('price_low_to_high');

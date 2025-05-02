@@ -8,11 +8,20 @@ import { deleteProduct, fetchAllProduct } from '~/service/api';
 import { Product } from '~/models/Product';
 import { UUID } from 'crypto';
 import { toast } from 'react-toastify';
+import { useAuth } from '~/context/AuthContext';
 
 const cx = classNames.bind(styles);
 
 const AdminProduct = () => {
+
+    const { fetchUserShoppingCart } = useAuth();
+
     const [productData, setProductData] = useState<Product[]>([]);
+
+    useEffect(() => {
+        document.title = `Sản phẩm`; // cập nhật tiêu đề
+    }, []);
+
     useEffect(() => {
         getCourses();
     }, []);
@@ -39,14 +48,14 @@ const AdminProduct = () => {
                 await deleteProduct(idProduct)
                     .then((res) => {
                         if (res?.data?.success) {
-                            toast.success('Xóa sản phẩm thành công!!!');
+                            toast.success(res.data.message);
+                            fetchUserShoppingCart();
                             getCourses();
                         }
                     });
             }
-        } catch (error) {
-            console.error(error);
-            toast.error('Xóa sản phẩm thất bại!!!');
+        } catch (error: any) {
+            toast.error(error.response.data.message);
 
         }
     };

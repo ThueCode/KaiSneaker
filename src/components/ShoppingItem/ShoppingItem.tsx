@@ -22,6 +22,8 @@ const ShoppingItem: React.FC<ShoppingItemProps> = ({ itemCart, getShoppingCart, 
         try {
             if (window.confirm('Bạn có chắc chắc muốn xóa sản phẩm khỏi giỏ hàng không ?')) {
                 const res = await deleteCart(itemCart.idCartItem);
+                console.log(res);
+
                 if (res.data.success) {
                     getShoppingCart();
                     fetchUserShoppingCart();
@@ -32,90 +34,64 @@ const ShoppingItem: React.FC<ShoppingItemProps> = ({ itemCart, getShoppingCart, 
             toast.error(error.response?.data?.message);
         }
     };
-    console.log(itemCart);
-
 
     const quantityUp = async () => {
-        if (itemCart.quantity >= 1) {
-
+        if (itemCart.quantity < itemCart.size.quantityInStock) {
+            // Kiểm tra số lượng có vượt quá số lượng tồn kho không
             try {
                 const cartDTO: CartDTO = {
                     idAccount: itemCart.idAccount,
                     idSize: itemCart.size.idSize,
                     shoesId: itemCart.product.shoesId,
                     quantity: itemCart.quantity + 1,
-                }
-
+                };
 
                 const res = await updateCart(itemCart.idCartItem, cartDTO);
 
                 if (res.data.success) {
                     console.log(res.data?.message);
-
-                    // getShoppingCart();
-                    // fetchUserShoppingCart();
-                    // toast.success(res.data?.message);
+                    getShoppingCart();
+                    fetchUserShoppingCart();
                 }
             } catch (error: any) {
-                console.log(error.response.data?.message);
-
+                console.log(error.response?.data?.message);
             }
+        } else {
+            toast.warning("Không thể tăng số lượng, đã đạt giới hạn số lượng trong kho");
         }
-
-
-        // const currentSize = sizeData.find((product) => stateShopping.idSize === product.idSize);
-        // if (currentSize && stateShopping.quantity < currentSize.quantityInStock) {
-        //     setStateShopping({ ...stateShopping, quantity: stateShopping.quantity + 1 });
-        // }
     };
 
     const quantityDown = async () => {
 
-        if (itemCart.quantity >= 1) {
+        if (itemCart.quantity > 1) { // Kiểm tra giảm số lượng không nhỏ hơn 1
             try {
                 const cartDTO: CartDTO = {
                     idAccount: itemCart.idAccount,
                     idSize: itemCart.size.idSize,
                     shoesId: itemCart.product.shoesId,
                     quantity: itemCart.quantity - 1,
-                }
+                };
 
                 const res = await updateCart(itemCart.idCartItem, cartDTO);
 
                 if (res.data.success) {
                     console.log(res.data?.message);
+                    getShoppingCart();
+                    fetchUserShoppingCart();
                 }
             } catch (error: any) {
-                console.log(error.response.data?.message);
-
+                console.log(error.response?.data?.message);
             }
+        } else {
+            toast.warning("Không thể giảm số lượng, số lượng phải lớn hơn 1");
         }
     }
 
-
-
-    // const quantityUp = async () => {
-    //     if (Number(QUANTITY) < Number(QUANTITYINSTOCK)) {
-    //         await axios.post('http://26.17.209.162/api/shoppingcart/post', {
-    //             type: 'update',
-    //             data: { IDACCOUNT: IDACCOUNT, IDSIZE: IDSIZE, SHOESID: SHOESID, QUANTITY: Number(QUANTITY) + 1 },
-    //         });
-    //     }
-    // };
-
-    // const quantityDown = async () => {
-    //     if (Number(QUANTITY) > 1) {
-    //         await axios.post('http://26.17.209.162/api/shoppingcart/post', {
-    //             type: 'update',
-    //             data: { IDACCOUNT: IDACCOUNT, IDSIZE: IDSIZE, SHOESID: SHOESID, QUANTITY: Number(QUANTITY) - 1 },
-    //         });
-    //     }
-    // };
     return (
         <div className={cx('row', 'item')}>
             <div className={cx('col', 'l-3', 'item_box')}>
                 <Image className={cx('item_img')}
-                    src={itemCart?.product?.shoesImg[0]} alt={itemCart?.product?.shoesName}
+                    src={itemCart?.product?.shoesImg} alt={itemCart?.product?.shoesName}
                 />
             </div>
             <div className={cx('col', 'l-9', 'info')}>
@@ -130,7 +106,7 @@ const ShoppingItem: React.FC<ShoppingItemProps> = ({ itemCart, getShoppingCart, 
                             </div>
                             <div className={cx('info_quantity')}>
                                 <span className={cx('minus')}
-                                // onClick={quantityDown}
+                                    onClick={quantityDown}
                                 >
                                     -
                                 </span>
@@ -138,7 +114,7 @@ const ShoppingItem: React.FC<ShoppingItemProps> = ({ itemCart, getShoppingCart, 
                                     {itemCart.quantity < 10 ? '0' + itemCart.quantity : itemCart.quantity}
                                 </span>
                                 <span className={cx('plus')}
-                                // onClick={quantityUp}
+                                    onClick={quantityUp}
                                 >
                                     +
                                 </span>

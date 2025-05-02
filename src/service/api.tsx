@@ -30,10 +30,28 @@ const deleteBrand = (idBrand: UUID) => {
 
 // SLIDE
 
+
+export interface SliderDTO {
+    imageUrl: string;
+    description: string;
+    order: number;
+}
+
 const fetchAllSlide = () => {
     const URL_BACKEND = "/slider"
     return axios.get(URL_BACKEND)
 }
+
+const createSlide = (data: SliderDTO) => {
+    const URL_BACKEND = "/slider"
+    return axios.post(URL_BACKEND, data)
+}
+
+const deleteSlide = (id: UUID) => {
+    const URL_BACKEND = `/slider/${id}`
+    return axios.delete(URL_BACKEND)
+}
+
 // Exit Slide
 
 // Product
@@ -72,6 +90,13 @@ const updateProduct = (idProduct: UUID, data: ProductDTO) => {
     const URL_BACKEND = `/products/${idProduct}`
     return axios.put(URL_BACKEND, data)
 }
+
+const fetchTopSelling = () => {
+    const URL_BACKEND = `/products/top-selling`
+    return axios.get(URL_BACKEND);
+}
+
+// END Product
 
 
 // SIZE
@@ -255,17 +280,60 @@ const clearCart = (idAccount: UUID) => {
 }
 
 // End Cart
+
+// Bill
+
+export interface BillDTO {
+    idAccount: UUID,
+    totalAmount: number,
+    status: string,
+    shoppingInfoId: UUID
+}
+
+const fetchAllBill = () => {
+    const URL_BACKEND = `/bill`
+    return axios.get(URL_BACKEND)
+}
+
+const fetchBillById = (billId: UUID) => {
+    const URL_BACKEND = `/bill/${billId}`
+    return axios.get(URL_BACKEND)
+}
+
+const fetchBillByAccountId = (idAccount: UUID) => {
+    const URL_BACKEND = `/bill/account/${idAccount}`
+    return axios.get(URL_BACKEND)
+}
+
+const createBill = (billDto: BillDTO) => {
+    const URL_BACKEND = `/bill`
+    return axios.post(URL_BACKEND, billDto)
+}
+
+const updateStatusBill = (idBill: UUID, status: String) => {
+    const URL_BACKEND = `/bill/${idBill}/status?status=${status}`
+    return axios.put(URL_BACKEND)
+}
+
+const deleteBillById = (idBill: UUID) => {
+    const URL_BACKEND = `/bill/${idBill}`
+    return axios.delete(URL_BACKEND)
+}
+
 export {
     fetchAllBrand, updateBrand, createBrand, deleteBrand,
 
-    fetchAllSlide,
+    fetchAllSlide, createSlide, deleteSlide,
 
-    fetchAllProduct, fetchProductByName, createProduct, deleteProduct, updateProduct,
+    fetchAllProduct, fetchProductByName, createProduct, deleteProduct, updateProduct, fetchTopSelling,
 
     fetchAllSize,
 
     fetchAllStock, createStock, updateStock, deleteStock, fetchStockByProduct,
     fetchAllUser, fetchUserById, updateUser, deleteUser, registerUser, fetchUserByName,
     fetchAllAddress, fetchAddressById, createAddress, updateAddress, deleteAddress, fetchAddressByUserId,
-    fetchAllCart, fetchCartByUserId, createCart, updateCart, deleteCart, clearCart
+    fetchAllCart, fetchCartByUserId, createCart, updateCart, deleteCart, clearCart,
+    fetchAllBill, fetchBillById, fetchBillByAccountId, createBill, updateStatusBill, deleteBillById
+
+
 }

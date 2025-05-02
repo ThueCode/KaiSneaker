@@ -4,7 +4,6 @@ import HomePage from "./page/Home/HomePage"
 import Sneaker from "./page/Sneaker/Sneaker"
 import DefaultWithSidebar from "./layouts/DefaultWithSidebar/DefaultWithSideBar"
 import DetailProduct from "./components/DetailProduct/DetailProduct"
-import { useContext } from "react"
 import BrandSneaker from "./page/Sneaker/BrandSneaker/BrandSneaker"
 import SignIn from "./components/SignIn/SignIn"
 import Admin from "./layouts/Admin/Admin"
@@ -16,7 +15,7 @@ import AdminStock from "./components/AdminStock/AdminStock"
 import CategoryAdmin from "./components/CategoryAdmin/CategoryAdmin"
 import AddProduct from "./components/AddProduct/AddProduct"
 import UpdateBrand from "./components/UpdateBrand/UpdateBrand"
-import { BrandContext } from "./context/BrandContext"
+import { useBrand } from "./context/BrandContext"
 import { ScrollToTop } from "./hooks"
 // Các route bảo vệ
 import PublicRoute from "./routes/PublicRoute"
@@ -28,9 +27,11 @@ import Profile from "./page/Profile/Profile"
 import AddressProfile from "./page/AddressProfile/AddressProfile"
 import Shopping from "./components/Shopping/Shopping"
 import ShoppingCart from "./page/ShoppingCart/ShoppingCart"
+import Checkout from "./components/Checkout/Checkout"
+import ViewBill from "./components/ViewBill/ViewBill"
 
 const App = () => {
-  const brandData = useContext(BrandContext); // Lấy danh sách brand từ context
+  const { brandData } = useBrand(); // Lấy danh sách brand từ context
   const { isAuthenticated } = useAuth();
   return (
     <>
@@ -71,10 +72,10 @@ const App = () => {
                 <Route path="/:nickname/address-shipping" element={<AddressProfile />} /> {/* Địa chỉ giao hàng */}
                 <Route path="/:nickname/address-shipping" element={<AddressProfile />} /> {/* Địa chỉ giao hàng */}
               </Route>
-              <Route path="/:nickname/shopping-cart" element={<ShoppingCart />} >
-                <Route path="" element={<Shopping />} /> {/* Giỏ hàng */}
+              <Route path="/:nickname" element={<ShoppingCart />} >
+                <Route path="shopping-cart" element={<Shopping />} /> {/* Giỏ hàng */}
+                <Route path="checkout" element={<Checkout />} /> {/* Thanh toan */}
               </Route>
-
             </Route>
 
             {/* ADMIN-ONLY ROUTES - Kiểm tra quyền admin */}
@@ -82,6 +83,7 @@ const App = () => {
               <Route path="/admin" element={<Admin />}>
                 <Route path="dashboard" element={<Dashboard />} />
                 <Route path="bill" element={<AdminBill />} />
+                <Route path="bill/:id" element={<ViewBill />} />
                 <Route path="stock" element={<AdminStock />} />
                 <Route path="brand" element={<CategoryAdmin />} />
                 <Route path="products" element={<AdminProduct />} />

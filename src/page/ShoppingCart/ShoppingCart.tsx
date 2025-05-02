@@ -7,6 +7,7 @@ import styles from './ShoppingCart.module.scss'
 const cx = classNames.bind(styles)
 
 const ShoppingCart = () => {
+
     return (
         <>
             <Header />

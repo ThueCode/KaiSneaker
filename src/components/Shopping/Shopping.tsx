@@ -16,15 +16,16 @@ const Shopping = () => {
     let money: number = 0;
     const delivery: number = 30000;
     let navigate = useNavigate();
+    useEffect(() => {
+        document.title = `Giỏ hàng`; // cập nhật tiêu đề
 
+    }, []);
     const getShoppingCart = async () => {
         try {
             if (isAuthenticated) {
                 if (userData?.idAccount) {
                     const res = await fetchCartByUserId(userData.idAccount);
                     if (res.data.success) {
-                        console.log(res.data);
-
                         setShoppingCart(res.data.result);
                     }
                 }
@@ -32,7 +33,7 @@ const Shopping = () => {
                 navigate('/login');
             }
         } catch (error: any) {
-            console.log("Errors: ", error.response?.data?.message || error);
+            setShoppingCart([]);
         }
     }
 
@@ -71,7 +72,6 @@ const Shopping = () => {
                     <div className={cx('subtotal', 'row')}>
                         <p className={cx('subtotal-title', 'col', 'l-8')}>Giá tiền</p>
                         <p className={cx('subtotal-money', 'col', 'l-4')}>
-                            {' '}
                             <NumericFormat value={money} displayType={'text'} thousandSeparator={true} suffix={'đ'} />
                         </p>
                     </div>

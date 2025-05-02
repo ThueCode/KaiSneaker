@@ -1,4 +1,3 @@
-import { ReactNode } from 'react';
 import Sidebar from '~/layouts/components/Sidebar/Sidebar';
 import classNames from 'classnames/bind';
 import styles from './DefaultWithSidebar.module.scss';

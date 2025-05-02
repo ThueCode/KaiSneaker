@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { faCircleXmark, faSearch, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faCircleXmark, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import HeadlessTippy from '@tippyjs/react/headless';
 import { Wrapper as PopperWrapper } from '~/components/Popper';
@@ -104,8 +104,6 @@ const Search = () => {
                             <FontAwesomeIcon icon={faCircleXmark} />
                         </button>
                     )}
-
-                {/* <FontAwesomeIcon className={cx(loading ? 'loading' : "no_loading")} icon={faSpinner} /> */}
 
                 <button className={cx('search-btn')} disabled>
                     <FontAwesomeIcon icon={faSearch} />

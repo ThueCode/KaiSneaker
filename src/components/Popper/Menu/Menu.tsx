@@ -19,7 +19,6 @@ const cx = classNames.bind(styles);
 
 const Menu = ({ children, items = [] }: MenuProps) => {
     const [history, setHistory] = useState<{ data: typeof items }[]>([{ data: items }]);
-    // const current = history[history.length - 1];
 
     const renderItems = () => {
         return items.map((item, index) => {

@@ -1,106 +1,157 @@
 import classNames from 'classnames/bind';
 import styles from './Checkout.module.scss';
-import AddressItem from '~/components/AddressItem';
+import AddressItem from '~/components/AddressItem/AddressItem';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
-import { useState, useReducer, useEffect } from 'react';
-import axios from 'axios';
-import { useCookies } from 'react-cookie';
-import { useNavigate } from 'react-router-dom';
-import { initStateAddress, addressReducer } from '~/reducers/addressReducers';
-import { setIDAccount, setInfoPhone, setInfoName, setAddress } from '~/actions/addressActions';
-import { setIDUser, setSHOPPINGINFOID, setTotal } from '~/actions/orderActions';
-import { initStateOrder, orderReducer } from '~/reducers/orderReducers';
-import { useLocation } from 'react-router-dom';
-import NumberFormat from 'react-number-format';
-import Button from '~/components/Button';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { NumericFormat } from 'react-number-format';
+import Button from '~/components/Button/Button';
+import { useAuth } from '~/context/AuthContext';
+import { BillDTO, createAddress, createBill, fetchAddressByUserId, fetchCartByUserId, ShippingInfoDTO } from '~/service/api';
+import { ShoppingCart } from '~/models/ShoppingCart';
+import { ShippingInfo } from '~/models/ShippingInfo';
+import { toast } from 'react-toastify';
+import { UUID } from 'crypto';
 
 const cx = classNames.bind(styles);
 
-function Checkout() {
-    const [statusModal, setStatusModal] = useState(false);
-    const [stateAddress, dispatchAddress] = useReducer(addressReducer, initStateAddress);
-    const [stateOrder, dispatchOrder] = useReducer(orderReducer, initStateOrder);
-    const [addressData, setAddressData] = useState([]);
-    const [shoppingCartData, setShoppingCartData] = useState([]);
-    let location = useLocation();
-
-    const [cookies, setCookie] = useCookies(['name']);
-    let navigate = useNavigate();
+const Checkout = () => {
 
     useEffect(() => {
-        if (cookies.name) {
-            dispatchAddress(setIDAccount(cookies.name.ID));
-            dispatchOrder(setIDUser(cookies.name.ID));
-            dispatchOrder(setTotal(location.state.data.delivery + location.state.data.money));
+        document.title = `Thanh toán`; // cập nhật tiêu đề
+    }, []);
+    const [statusModal, setStatusModal] = useState(false);
 
-            axios
-                .post('http://26.17.209.162/api/shoppingcart/post', {
-                    type: 'get',
-                    data: { IDACCOUNT: cookies.name.ID },
-                })
-                .then((res) => {
-                    setShoppingCartData(res.data);
-                });
-            getCourses();
+    const [addressData, setAddressData] = useState<ShippingInfo[]>([]);
+    const [shoppingCartData, setShoppingCartData] = useState<ShoppingCart[]>([]);
+    let location = useLocation();
+    const { isAuthenticated, userData, fetchUserShoppingCart } = useAuth();
+
+    let navigate = useNavigate();
+
+    const [stateBill, setStateBill] = useState<BillDTO>({
+        idAccount: userData?.idAccount ?? '-----',
+        totalAmount: location.state.data.money + location.state.data.delivery,
+        status: "Đang giao hàng",
+        shoppingInfoId: "-----"
+    });
+    const [stateAddress, setStateAddress] = useState<ShippingInfoDTO>({
+        idAccount: userData?.idAccount || '-----',
+        shoppingInfoName: "",
+        shoppingInfoPhone: "",
+        address: "",
+    });
+
+    const [errors, setErrors] = useState({
+        shoppingInfoName: "",
+        shoppingInfoPhone: "",
+        address: "",
+    });
+
+
+    const getAddress = async () => {
+        if (isAuthenticated) {
+            if (userData?.idAccount) {
+                const res = await fetchAddressByUserId(userData.idAccount);
+                if (res.data.success) {
+                    setAddressData(res.data.result);
+                }
+            }
+        } else {
+            navigate("/login")
+        }
+    }
+
+    const getShoppingCart = async () => {
+        if (isAuthenticated) {
+            if (userData?.idAccount) {
+
+                setStateBill({ ...stateBill, idAccount: userData.idAccount })
+                const res = await fetchCartByUserId(userData.idAccount);
+                if (res.data.success) {
+                    console.log(res.data);
+                    setShoppingCartData(res.data.result);
+                }
+            }
         } else {
             navigate('/login');
         }
-    }, []);
+    }
+
+    useEffect(() => {
+        getShoppingCart();
+        getAddress();
+    }, [isAuthenticated, userData]);
+
+    const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setStateAddress({ ...stateAddress, [name]: value });
+    }
+
+    const handleSubmitAddress = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        try {
+            const newErrors = validateForm();
+            // Nếu có lỗi thì không submit
+            if (Object.values(newErrors).some(error => error !== '')) {
+                setErrors(newErrors);
+                return;
+            }
+            const res = await createAddress(stateAddress);
+            if (res.data.success) {
+                toast.success(res.data.message);
+                setStateAddress({
+                    ...stateAddress,
+                    shoppingInfoPhone: "",
+                    shoppingInfoName: "",
+                    address: ""
+                });
+                hideBuyTickets()
+                getAddress();
+            }
+
+        } catch (error) {
+            toast.error('Có lỗi xảy ra khi tạo địa chỉ. Vui lòng thử lại.');
+        }
+
+    };
+
+    const validateForm = () => {
+        const newErrors = {
+            shoppingInfoName: "",
+            shoppingInfoPhone: "",
+            address: "",
+        };
+
+        if (!stateAddress.shoppingInfoName.trim()) {
+            newErrors.shoppingInfoName = 'Tên người nhận không được để trống';
+        }
+
+        if (!stateAddress.address.trim()) {
+            newErrors.address = 'Địa chỉ không được để trống';
+        }
+
+        if (!stateAddress.shoppingInfoPhone.trim()) {
+            newErrors.shoppingInfoPhone = 'Số điện thoại không được để trống';
+        } else if (stateAddress.shoppingInfoPhone.length > 10) {
+            newErrors.shoppingInfoPhone = 'Số điện thoại không hợp lệ!! Vui lòng nhập 10 số';
+        }
+
+        return newErrors;
+    };
 
     const addOrder = async () => {
         try {
-            await axios
-                .post('http://26.17.209.162/api/bill/post', {
-                    type: 'create',
-                    data: stateOrder,
-                })
-                .then((res) => {
-                    if (res.data == 1) {
-                        alert('Thanh toán thành công !!');
-                        navigate('/');
-                    }
-                });
+            const res = await createBill(stateBill);
+            if (res.data.success) {
+                fetchUserShoppingCart();
+                toast.success("Thanh toán hóa đơn thành công");
+                navigate("/");
+            }
         } catch (error) {
-            console.log(error);
-        }
-    };
-
-    const getCourses = async () => {
-        try {
-            await axios
-                .post('http://26.17.209.162/api/shippinginfo/post', {
-                    type: 'get',
-                    data: { IDACCOUNT: cookies.name.ID },
-                })
-                .then((res) => {
-                    setAddressData(res.data);
-                });
-        } catch (error) {
-            console.log(error);
-        }
-    };
-
-    const handleSubmit = async (e) => {
-        try {
-            e.preventDefault();
-            await axios
-                .post('http://26.17.209.162/api/shippinginfo/post', {
-                    type: 'create',
-                    data: stateAddress,
-                })
-                .then((response) => {
-                    if (response.data == 1) {
-                        alert('Thêm địa chỉ thành công !!');
-                        setStatusModal(false);
-                        getCourses();
-                    } else if (response.data == -1) {
-                        alert('Thêm địa chỉ thất bại !!');
-                    }
-                });
-        } catch (error) {
-            console.log(error);
+            toast.success("Thanh toán hóa đơn thất bại");
         }
     };
 
@@ -119,30 +170,27 @@ function Checkout() {
                         <div className={cx('inner')}>
                             <h2 className={cx('heading')}>Địa chỉ giao hàng</h2>
                             <div className={cx('address')}>
-                                {addressData != 0 ? (
-                                    addressData.map((address) => {
+                                {addressData ? (
+                                    addressData.map((address: ShippingInfo) => {
                                         return (
-                                            <div className={cx('item')} key={address.SHOPPINGINFOID}>
+                                            <div className={cx('item')} key={address.shoppingInfoId}>
                                                 <input
                                                     type="radio"
                                                     name="address"
                                                     className={cx('rdo-address')}
-                                                    value={address.SHOPPINGINFOID ? address.SHOPPINGINFOID : null}
-                                                    id={address.SHOPPINGINFOID}
-                                                    checked={stateOrder.SHOPPINGINFOID === address.SHOPPINGINFOID}
-                                                    onChange={(e) => dispatchOrder(setSHOPPINGINFOID(e.target.value))}
+                                                    value={address.shoppingInfoId}
+                                                    id={address.shoppingInfoId}
+                                                    checked={stateBill.shoppingInfoId === address.shoppingInfoId}
+                                                    onChange={(e) => setStateBill({ ...stateBill, shoppingInfoId: e.target.value as UUID })}
                                                 ></input>
-                                                <label htmlFor={address.SHOPPINGINFOID} className={cx('address_item')}>
+                                                <label htmlFor={address.shoppingInfoId} className={cx('address_item')}>
                                                     <AddressItem
-                                                        SHOPPINGINFOID={address.SHOPPINGINFOID}
-                                                        SHOPPINGINFONAME={address.SHOPPINGINFONAME}
-                                                        IDACCOUNT={address.IDACCOUNT}
-                                                        SHOPPINGINFOPHONE={address.SHOPPINGINFOPHONE}
-                                                        ADDRESS={address.ADDRESS}
+                                                        addressData={address}
+                                                        getCourses={getAddress}
                                                     />
                                                 </label>
                                             </div>
-                                        );
+                                        )
                                     })
                                 ) : (
                                     <></>
@@ -150,7 +198,7 @@ function Checkout() {
                                 <div className={cx('actions')}>
                                     <Button
                                         className={cx('btn_ctn')}
-                                        disabled={stateOrder.SHOPPINGINFOID === '' ? true : false}
+                                        disabled={stateBill.shoppingInfoId === "-----" ? true : false}
                                         onClick={addOrder}
                                     >
                                         Thanh toán
@@ -179,7 +227,7 @@ function Checkout() {
                             <div className={cx('order_info-item')}>
                                 <p className={cx('order_content')}>Thành tiền</p>
                                 <p className={cx('order_content')}>
-                                    <NumberFormat
+                                    <NumericFormat
                                         value={location.state.data.money}
                                         displayType={'text'}
                                         thousandSeparator={true}
@@ -190,7 +238,7 @@ function Checkout() {
                             <div className={cx('order_info-item')}>
                                 <p className={cx('order_content')}>Vận chuyển</p>
                                 <p className={cx('order_content')}>
-                                    <NumberFormat
+                                    <NumericFormat
                                         value={location.state.data.delivery}
                                         displayType={'text'}
                                         thousandSeparator={true}
@@ -203,7 +251,7 @@ function Checkout() {
                             <div className={cx('order_info-item')}>
                                 <p className={cx('order_content')}>Tổng tiền</p>
                                 <p className={cx('order_content')}>
-                                    <NumberFormat
+                                    <NumericFormat
                                         value={location.state.data.delivery + location.state.data.money}
                                         displayType={'text'}
                                         thousandSeparator={true}
@@ -213,28 +261,30 @@ function Checkout() {
                             </div>
                         </div>
                         <div className={cx('product_checkout')}>
-                            {shoppingCartData != 0 ? (
-                                shoppingCartData.map((product, index) => {
+                            {shoppingCartData ? (
+                                shoppingCartData.map((product: ShoppingCart) => {
                                     return (
-                                        <div className={cx('product_item')} key={product.SHOESID}>
+                                        <div className={cx('product_item')}
+                                            key={`${product.product.shoesId}-${product.size.idSize}`}
+                                        >
                                             <img
-                                                src={product.IMAGESHOES1}
-                                                alt={product.SHOESNAME}
+                                                src={product.product.shoesImg}
+                                                alt={product.product.shoesName}
                                                 className={cx('product_img')}
                                             />
                                             <div className={cx('product_content-box')}>
-                                                <p className={cx('product_content')}>{product.SHOESNAME}</p>
+                                                <p className={cx('product_content')}>{product.product.shoesName}</p>
                                                 <p className={cx('product_content')}>
                                                     <span>Số lượng : </span>
-                                                    {product.QUANTITY}
+                                                    {product.quantity}
                                                 </p>
                                                 <p className={cx('product_content')}>
-                                                    <span>Size : {product.SIZEEUR}</span>
+                                                    <span>Size : {product.size.sizeVi}</span>
                                                 </p>
                                                 <p className={cx('product_content')}>
                                                     <span>Thành tiền :</span>
-                                                    <NumberFormat
-                                                        value={product.SHOESPRICE * product.QUANTITY}
+                                                    <NumericFormat
+                                                        value={product.product.shoesPrice * product.quantity}
                                                         displayType={'text'}
                                                         thousandSeparator={true}
                                                         suffix={'đ'}
@@ -243,7 +293,8 @@ function Checkout() {
                                             </div>
                                         </div>
                                     );
-                                })
+                                }
+                                )
                             ) : (
                                 <h2>Không có sản phẩm</h2>
                             )}
@@ -263,7 +314,9 @@ function Checkout() {
                         <h2 className={cx('modal-heading')}>Thêm địa chỉ</h2>
                         <FontAwesomeIcon className={cx('modal--close')} icon={faXmark} onClick={hideBuyTickets} />
                     </div>
-                    <form onSubmit={handleSubmit}>
+                    <form
+                        onSubmit={handleSubmitAddress}
+                    >
                         <div className={cx('stock-list')}>
                             <div className={cx('info')}>
                                 <label htmlFor="" className={cx('input-label')}>
@@ -273,9 +326,14 @@ function Checkout() {
                                     className={cx('input-item')}
                                     type="text"
                                     placeholder="Tên người nhận"
-                                    onChange={(e) => dispatchAddress(setInfoName(e.target.value))}
+                                    name='shoppingInfoName'
+                                    value={stateAddress.shoppingInfoName}
+                                    onChange={handleChangeInput}
                                 />
+                                {errors.shoppingInfoName && <div className={cx('error_message')}>{errors.shoppingInfoName}</div>}
+
                             </div>
+
                             <div className={cx('info')}>
                                 <label htmlFor="" className={cx('input-label')}>
                                     Địa chỉ
@@ -284,8 +342,12 @@ function Checkout() {
                                     className={cx('input-item')}
                                     type="text"
                                     placeholder="Địa chỉ"
-                                    onChange={(e) => dispatchAddress(setAddress(e.target.value))}
+                                    name='address'
+                                    value={stateAddress.address}
+                                    onChange={handleChangeInput}
                                 />
+                                {errors.address && <div className={cx('error_message')}>{errors.address}</div>}
+
                             </div>
                             <div className={cx('info')}>
                                 <label htmlFor="" className={cx('input-label')}>
@@ -295,11 +357,20 @@ function Checkout() {
                                     className={cx('input-item')}
                                     type="text"
                                     placeholder="Số điện thoại"
-                                    onChange={(e) => dispatchAddress(setInfoPhone(e.target.value))}
+                                    name='shoppingInfoPhone'
+                                    value={stateAddress.shoppingInfoPhone}
+                                    onChange={handleChangeInput}
+                                    onKeyPress={(event) => {
+                                        if (!/[0-9]/.test(event.key)) {
+                                            event.preventDefault();
+                                        }
+                                    }}
                                 />
+                                {errors.shoppingInfoPhone && <div className={cx('error_message')}>{errors.shoppingInfoPhone}</div>}
+
                             </div>
                         </div>
-                        <button className={cx('btn')}>Save</button>
+                        <button className={cx('btn')} type='submit'>Save</button>
                     </form>
                 </div>
             </div>

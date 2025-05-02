@@ -4,7 +4,7 @@ import classNames from 'classnames/bind';
 import styles from './signIn.module.scss';
 import { Link, useNavigate } from 'react-router-dom';
 import images from '~/assets/images';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { useAuth } from '~/context/AuthContext';
 import { registerUser } from '~/service/api';
@@ -23,6 +23,10 @@ interface SignUpType {
 }
 
 const SignIn = () => {
+
+    useEffect(() => {
+        document.title = `Đăng nhập & Đăng ký`; // cập nhật tiêu đề
+    }, []);
 
     const { login } = useAuth();
 
@@ -93,7 +97,7 @@ const SignIn = () => {
             }
             if (!data.signUppassword) {
                 errors.signUppassword = "Vui lòng nhập mật khẩu";
-            } else if (data.signUppassword.length < 4) {
+            } else if (data.signUppassword.length < 6) {
                 errors.signUppassword = "Mật Khẩu không được ít hơn 4 ký tự";
             } else if (data.signUppassword.length > 18) {
                 errors.signUppassword = "Mật khẩu không dài quá 18 ký tự";

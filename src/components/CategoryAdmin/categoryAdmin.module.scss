@@ -79,6 +79,7 @@
 
 .details-content-item-btn {
     padding: 8px 20px;
+    height: 30px;
     border: none;
     font-weight: 400 !important;
     min-width: 100px;
@@ -121,7 +122,6 @@
 .modal-papes {
     background-color: var(--white-color);
     width: 560px;
-    height: 582px;
     border-radius: 20px;
     padding: 50px;
 }
@@ -293,4 +293,10 @@
             }
         }
     }
+}
+
+.error_message {
+    color: var(--red-color);
+    font-size: 12px;
+    font-weight: 500;
 }

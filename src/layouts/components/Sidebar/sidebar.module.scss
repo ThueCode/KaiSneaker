@@ -15,10 +15,12 @@
     text-decoration: none;
     color: var(--color-black);
 }
+
 .category {
     background-color: var(--color-white);
     border-radius: 2px;
 }
+
 .category__heading {
     font-size: 1.8rem;
     color: var(--color-black);
@@ -172,7 +174,6 @@
 }
 
 .filter__page-btn {
-    /* chia đôi thằng cha ra  */
     flex: 1;
     display: flex;
     background-color: var(--color-white);
@@ -185,7 +186,6 @@
 }
 
 .filter__page-icon {
-    /* căn giữa */
     margin: auto;
     color: var(--color-black);
 }

@@ -40,7 +40,7 @@ const Header = () => {
                 ? 'Đi tới trang Admin'
                 : 'Thông tin tài khoản',
             to: userData?.role?.roleName === "ADMIN"
-                ? `admin/dashboard`
+                ? `/admin/dashboard`
                 : `/@${userData?.idAccount}/profile`,
 
         },

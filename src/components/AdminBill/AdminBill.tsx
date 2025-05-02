@@ -2,54 +2,67 @@ import classNames from 'classnames/bind';
 import styles from './adminBill.module.scss';
 
 import { useEffect, useState } from 'react';
-import NumberFormat, { NumericFormat } from 'react-number-format';
+import { NumericFormat } from 'react-number-format';
 
-// import config from '~/config';
 import Button from '~/components/Button/Button';
+import { deleteBillById, fetchAllBill, updateStatusBill } from '~/service/api';
+import { Bill } from '~/models/Bill';
+import { useAuth } from '~/context/AuthContext';
+import { UUID } from 'crypto';
+import { toast } from 'react-toastify';
 const cx = classNames.bind(styles);
 
 const AdminBill = () => {
-    const [billData, setBillData] = useState([]);
-    // useEffect(() => {
-    //     getCourses();
-    // }, []);
+    const [billData, setBillData] = useState<Bill[]>([]);
+    const { userData } = useAuth();
 
-    // const getCourses = async () => {
-    //     try {
-    //         await axios
-    //             .get('http://26.17.209.162/api/bill/get')
-    //             .then(async (res) => {
-    //                 setBillData(res.data);
-    //             })
-    //             .catch((error) => {
-    //                 console.log(error);
-    //             });
-    //     } catch (error) {
-    //         console.error(error);
-    //     }
-    // };
+    useEffect(() => {
+        document.title = `Hóa đơn`; // cập nhật tiêu đề
+    }, []);
 
-    // const handleUpdate = async (IDBILL, status) => {
-    //     try {
-    //         await axios
-    //             .post('http://26.17.209.162/api/bill/post', {
-    //                 type: 'updatebill',
-    //                 data: { IDBILL: IDBILL, STATUSBILL: status },
-    //             })
-    //             .then(async (res) => {
-    //                 if (res.data == 1) {
-    //                     alert('Cập nhật trạng thái hóa đơn thành công');
-    //                 } else if (res.data == -1) {
-    //                     alert('Cập nhật trạng thái hóa đơn thất bại');
-    //                 }
-    //             })
-    //             .catch((error) => {
-    //                 console.log(error);
-    //             });
-    //     } catch (error) {
-    //         console.log(error);
-    //     }
-    // };
+    useEffect(() => {
+        getCourses();
+    }, []);
+
+    const getCourses = async () => {
+        try {
+            const res = await fetchAllBill();
+            if (res.data.success) {
+                setBillData(res.data.result)
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleUpdate = async (idBill: UUID, status: string) => {
+        try {
+            const res = await updateStatusBill(idBill, status);
+            if (res.data.success) {
+                toast.success("Cập nhật trạng thái hóa đơn thành công");
+                getCourses();
+
+            }
+        } catch (error: any) {
+            toast.error("Cập nhật trạng thái hóa đơn thất bại");
+            console.log(error);
+        }
+    };
+
+    const handleDelete = async (idBill: UUID) => {
+        try {
+            if (window.confirm('Bạn có chắc chắn muốn hóa đơn này không?')) {
+                const res = await deleteBillById(idBill);
+                if (res.data.success) {
+                    toast.success(res.data.message);
+                    getCourses();
+
+                }
+            }
+        } catch (error: any) {
+            toast.error("Xóa trạng thái hóa đơn thất bại");
+        }
+    };
 
     return (
         <div className={cx('wrapper')}>
@@ -58,28 +71,26 @@ const AdminBill = () => {
                 <h2 className={cx('account-heading')}>Hóa đơn sản phẩm</h2>
             </div>
 
-            {billData.length !== 0 ? (
+            {billData.length ? (
                 <table className={cx('details-table')}>
                     <thead className={cx('details-thead')}>
                         <tr className={cx('details-title-list')}>
-                            <td className={cx('details-title-item')}>ID hóa đơn</td>
                             <td className={cx('details-title-item')}>Tên khách hàng</td>
                             <td className={cx('details-title-item')}>Ngày lập</td>
                             <td className={cx('details-title-item')}>Thành tiền</td>
                             <td className={cx('details-title-item')}>Trạng thái</td>
                         </tr>
                     </thead>
-                    {/* {billData.map((bill, index) => {
-                        var status = bill.STATUSBILL;
+                    {billData.map((bill: Bill) => {
+                        var status = bill.status;
                         return (
-                            <tbody className={cx('details-tbody')} key={bill.IDBILL}>
+                            <tbody className={cx('details-tbody')} key={bill.billId}>
                                 <tr className={cx('details-content-list')}>
-                                    <td className={cx('details-content-item')}>{bill.IDBILL}</td>
-                                    <td className={cx('details-content-item')}>{bill.FULLNAME}</td>
-                                    <td className={cx('details-content-item')}>{bill.CREATEDBILLDATE}</td>
+                                    <td className={cx('details-content-item')}>{userData?.fullName}</td>
+                                    <td className={cx('details-content-item')}>{bill.billDate}</td>
                                     <td className={cx('details-content-item')}>
                                         <NumericFormat
-                                            // value={bill.TOTAL}
+                                            value={bill.totalAmount}
                                             displayType={'text'}
                                             thousandSeparator={true}
                                             suffix={'đ'}
@@ -92,7 +103,7 @@ const AdminBill = () => {
                                                 status = e.target.value;
                                             }}
                                         >
-                                            <option value={bill.STATUSBILL}>{bill.STATUSBILL}</option>
+                                            <option value={bill.status}>{bill.status}</option>
                                             <option value="Trả về">Trả về</option>
                                             <option value="Đang giao hàng">Đang giao hàng</option>
                                             <option value="Đã giao">Đã giao</option>
@@ -100,8 +111,8 @@ const AdminBill = () => {
                                     </td>
                                     <td className={cx('details-content-item')}>
                                         <Button
-                                            to={`${config.routes.adminBill}/${bill.IDBILL}`}
-                                            state={{ data: { IDBILL: bill.IDBILL, TOTAL: bill.TOTAL } }}
+                                            to={`/admin/bill/${bill.billId}`}
+                                            state={{ data: { billId: bill.billId, totalAmount: bill.totalAmount } }}
                                             className={cx('details-content-item-btn')}
                                         >
                                             Xem
@@ -110,15 +121,23 @@ const AdminBill = () => {
                                     <td className={cx('details-content-item')}>
                                         <Button
                                             className={cx('details-content-item-btn')}
-                                            onClick={(e) => handleUpdate(bill.IDBILL, status)}
+                                            onClick={() => handleUpdate(bill.billId, status)}
                                         >
                                             Cập nhật
+                                        </Button>
+                                    </td>
+                                    <td className={cx('details-content-item')}>
+                                        <Button
+                                            className={cx('details-content-item-btn')}
+                                            onClick={() => handleDelete(bill.billId)}
+                                        >
+                                            Xóa
                                         </Button>
                                     </td>
                                 </tr>
                             </tbody>
                         );
-                    })} */}
+                    })}
                 </table>
             ) : (
                 <h2>Không có hóa đơn</h2>

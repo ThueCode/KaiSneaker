@@ -66,7 +66,6 @@ const ItemStock: React.FC<ItemStockProps> = ({ stockItem, productData, sizeData,
         } catch (error) {
             console.log(error);
             toast.success('Cập nhật sản phẩm trong kho thất bại');
-
         }
     };
 

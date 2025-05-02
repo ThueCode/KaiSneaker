@@ -16,6 +16,10 @@ import { toast } from 'react-toastify';
 const cx = classNames.bind(styles);
 const AdminStock = () => {
 
+    useEffect(() => {
+        document.title = `Tồn Kho`; // cập nhật tiêu đề
+    }, []);
+
     const [statusModal, setStatusModal] = useState(false);
     const [sizeData, setSizeData] = useState<Size[]>([]);
     const [productData, setProductData] = useState<Product[]>([]);

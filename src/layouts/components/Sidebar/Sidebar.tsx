@@ -58,7 +58,6 @@ const Sidebar = ({ children }: SidebarProps) => {
                 </div>
             </div>
             <div className={cx('col', 'l-9')}>
-                {/* Product */}
                 {children}
             </div>
         </div>

@@ -1,80 +1,77 @@
 import classNames from 'classnames/bind';
-import Button from '~/components/Button';
+import Button from '~/components/Button/Button';
 import styles from './ViewBill.module.scss';
 
 import { useEffect, useState } from 'react';
-import config from '~/config';
 import { useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
-import axios from 'axios';
-import NumberFormat from 'react-number-format';
+import { NumericFormat } from 'react-number-format';
+import { fetchBillById } from '~/service/api';
+import { Bill } from '~/models/Bill';
 
 const cx = classNames.bind(styles);
 
-function ViewBill() {
-    const [infoBillData, setInfoBillData] = useState([]);
-    let location = useLocation();
+const ViewBill = () => {
+    const [billData, setBillData] = useState<Bill>();
+
+    const location = useLocation();
 
     useEffect(() => {
         getCourses();
     }, []);
-    console.log(location.state.data);
 
     const getCourses = async () => {
         try {
-            await axios
-                .post('http://26.17.209.162/api/detailbill/post', {
-                    type: 'get',
-                    data: { IDBILL: location.state.data.IDBILL },
-                })
-                .then(async (res) => setInfoBillData(res.data))
-                .catch((error) => {
-                    console.log(error);
-                });
-        } catch (error) {
-            console.error(error);
+            const res = await fetchBillById(location.state.data.billId);
+            if (res.data.success) {
+                setBillData(res.data.result)
+            }
+        } catch (error: any) {
+            console.log(error.data.response.message);
+
         }
     };
+
     return (
         <>
             {/* <!-- Begin adminProductTable --> */}
             <div className={cx('bill-header')}>
-                <h2 className={cx('bill-heading')}>Mã hóa đơn: {location.state.data.IDBILL}</h2>
+                <h2 className={cx('bill-heading')}>Mã hóa đơn: {location.state.data.billId}</h2>
                 <h2 className={cx('bill-heading')}>
                     <span>Tổng hóa đơn : </span>
-                    <NumberFormat
-                        value={location.state.data.TOTAL}
+                    <NumericFormat
+                        value={location.state.data.totalAmount}
                         displayType={'text'}
                         thousandSeparator={true}
                         suffix={'đ'}
                     />
                 </h2>
             </div>
-            {infoBillData != 0 ? (
+
+
+            {billData ? (
                 <table className={cx('details-table')}>
                     <thead className={cx('details-thead')}>
                         <tr className={cx('details-title-list')}>
-                            <td className={cx('details-title-item')}>ID sản phẩm</td>
                             <td className={cx('details-title-item')}>Hình ảnh</td>
                             <td className={cx('details-title-item')}>Tên sản phẩm</td>
                             <td className={cx('details-title-item')}>SL sản phẩm</td>
                             <td className={cx('details-title-item')}>Thành tiền</td>
                         </tr>
                     </thead>
-                    {infoBillData.map((product, index) => {
+                    {billData.billDetail.map((product) => {
                         return (
-                            <tbody className={cx('details-tbody')}>
+                            <tbody className={cx('details-tbody')} key={product.shoesId + product.sizeId}>
                                 <tr className={cx('details-content-list')}>
-                                    <td className={cx('details-content-item')}>{product.SHOESID}</td>
                                     <td className={cx('details-content-item')}>
-                                        <img src={product.IMAGESHOES1} className={cx('product-img')} />
+                                        <img src={product.shoesImg} className={cx('product-img')} />
                                     </td>
-                                    <td className={cx('details-content-item')}>{product.SHOESNAME}</td>
-                                    <td className={cx('details-content-item')}>{product.QUANTITYINBILL}</td>
+                                    <td className={cx('details-content-item')}>{product.shoesName}</td>
+                                    <td className={cx('details-content-item')}>{product.quantity}</td>
                                     <td className={cx('details-content-item')}>
-                                        <NumberFormat
-                                            value={product.QUANTITYINBILL * product.SHOESPRICE}
+                                        <NumericFormat
+                                            value={product.totalPrice}
                                             displayType={'text'}
                                             thousandSeparator={true}
                                             suffix={'đ'}
@@ -90,7 +87,7 @@ function ViewBill() {
             )}
 
             <Button
-                to={config.routes.adminBill}
+                to={"/admin/bill"}
                 className={cx('btn_back')}
                 leftIcon={<FontAwesomeIcon icon={faArrowLeft} />}
             >

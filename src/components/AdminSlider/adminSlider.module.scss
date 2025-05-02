@@ -240,7 +240,6 @@
 .modal-papes {
     background-color: var(--white-color);
     width: 560px;
-    height: 582px;
     border-radius: 20px;
     padding: 50px;
 }
@@ -375,4 +374,42 @@
 .details-content-item-btn:hover {
     cursor: pointer;
     opacity: 0.8;
+}
+
+.input-label {
+    display: block;
+    margin-left: 18px;
+    font-size: 1.4rem;
+    padding: 0 8px;
+    background: white;
+    position: absolute;
+    color: var(--black-color);
+}
+
+.input-item {
+    color: var(--black-color);
+    font-size: 1.4rem;
+    width: 460px;
+    padding: 12px 0 12px 26px;
+    margin: 10px 0;
+    outline: none;
+    border: 1px solid;
+    border-color: rgba(0, 0, 0, 12%);
+    border-radius: 8px;
+}
+
+.input-item-description {
+    font-size: 1.4rem;
+    margin-top: 12px;
+    padding: 6px;
+    max-height: 300px;
+    max-width: 460px;
+    min-width: 460px;
+}
+
+.error-message {
+    color: var(--red-color);
+    font-size: 1.4rem;
+    font-weight: bold;
+    text-align: center;
 }

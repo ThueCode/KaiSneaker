@@ -12,26 +12,24 @@ const cx = classNames.bind(styles);
 const Slider = () => {
     const [slideData, setSlideData] = useState<Slide[]>([]);
 
-
     useEffect(() => {
         getCourses();
     }, []);
 
     const getCourses = async () => {
-        try {
-            await fetchAllSlide()
-                .then((res) => {
-                    return res.data.result;
+        await fetchAllSlide()
+            .then((res) => {
+                return res.data.result;
+            }).then((data) => setSlideData(data))
+            .catch((err) => {
+                console.log(err.data.message);
+            })
 
-                }).then((data) => setSlideData(data))
-        } catch (error) {
-            console.error(error);
-        }
     };
 
     return (
         <div className={cx('slide-container')}>
-            {slideData.length > 0 ?
+            {slideData.length > 0 &&
                 <Fade>
                     {slideData.map((slide) => {
                         return (
@@ -45,8 +43,6 @@ const Slider = () => {
                         );
                     })}
                 </Fade>
-                :
-                <></>
             }
 
         </div>

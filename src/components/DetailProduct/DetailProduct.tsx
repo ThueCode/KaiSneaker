@@ -31,6 +31,13 @@ const DetailProduct = () => {
         quantity: 1,
     });
 
+    useEffect(() => {
+        if (location.state.data) {
+            document.title = `${location.state.data.shoesName}`; // cập nhật tiêu đề
+        }
+    }, []);
+
+
     const [productData, setProductData] = useState<Product>({
         shoesId: "-----",
         shoesName: "string",
@@ -130,7 +137,6 @@ const DetailProduct = () => {
     return (
         <div className="grid wide">
             <div className="row">
-                {/* <Breadcrumbs /> */}
                 <div className={cx('slide-container', 'col', 'l-5')}>
                     <Fade>
                         {productData?.shoesImg

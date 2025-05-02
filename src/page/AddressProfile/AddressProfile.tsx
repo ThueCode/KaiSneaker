@@ -11,17 +11,26 @@ import { toast } from 'react-toastify';
 const cx = classNames.bind(styles);
 
 const AddressProfile = () => {
+
+    useEffect(() => {
+        document.title = `Thông tin tài khoản`; // cập nhật tiêu đề
+    }, []);
+
     const [statusModal, setStatusModal] = useState(false);
     const [addressData, setAddressData] = useState<ShippingInfo[]>([]);
     const { userData } = useAuth();
+
+    // Khởi tạo với giá trị mặc định}
     const [stateAddress, setStateAddress] = useState<ShippingInfoDTO>(
         {
             shoppingInfoName: "",
             shoppingInfoPhone: "",
             address: "",
             idAccount: "00000-00000-00000-00000-00000"
-        } // Khởi tạo với giá trị mặc định}
+        }
     );
+
+    // State Lỗi
     const [errors, setErrors] = useState({
         shoppingInfoName: "",
         shoppingInfoPhone: "",
@@ -106,6 +115,11 @@ const AddressProfile = () => {
     };
     const hideBuyTickets = () => {
         setStatusModal(false);
+        setErrors({
+            shoppingInfoName: "",
+            shoppingInfoPhone: "",
+            address: "",
+        })
     };
 
     return (

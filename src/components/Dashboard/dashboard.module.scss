@@ -87,17 +87,20 @@
 .details-header-btn {
     position: relative;
     padding: 5px 10px;
-    background: var(--black-color);
+    background: var(--black-color) !important;
     text-decoration: none;
-    color: var(--white-color);
+    color: var(--white-color) !important;
     border-radius: 6px;
 }
+
+
 
 .details-table-thead .details-table-thead-list {
     font-weight: 600;
 }
+
 /* Lấy từ thằng thứ 2 trở về sao "magic" */
-.details-table-tbody + .details-table-tbody {
+.details-table-tbody+.details-table-tbody {
     color: var(--black-color);
     border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
@@ -194,10 +197,12 @@
     font-weight: 500;
     line-height: 20px;
 }
+
 .recent__customers .recent__customers-table tr td h4 span {
     font-size: 1.4rem;
     color: var(--black-color);
 }
+
 .recent__customers .recent__customers-table tr:hover {
     background: var(--black-color);
     color: var(--white-color);

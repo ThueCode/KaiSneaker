@@ -11,7 +11,11 @@ import { toast } from 'react-toastify';
 const cx = classNames.bind(styles);
 
 const Profile = () => {
-    const { userData } = useAuth();
+    useEffect(() => {
+        document.title = `Thông tin tài khoản`; // cập nhật tiêu đề
+    }, []);
+
+    const { userData, fetchUserData } = useAuth();
     const [stateUser, setStateUser] = useState<UserDTO>(
         {
             username: "",
@@ -99,7 +103,7 @@ const Profile = () => {
                 const res = await updateUser(userData.idAccount, stateUser);
                 if (res.data.success) {
                     toast.success('Cập nhật thành công!');
-
+                    fetchUserData();
                 }
             } catch (error) {
                 toast.error('Cập nhật thất bại!');
@@ -107,16 +111,6 @@ const Profile = () => {
         } else {
             console.error('User ID không tồn tại!');
         }
-        // await axios
-        //     .post('http://26.17.209.162/api/account/post', {
-        //         type: 'update',
-        //         data: stateUser,
-        //     })
-        //     .then((res) => {
-        //         if (res.data === 1) {
-        //             window.location.reload();
-        //         }
-        //     });
     })
 
 
@@ -126,7 +120,6 @@ const Profile = () => {
     }
 
     // // Convert input sang base 64
-    //----------convert base64
     const uploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -166,6 +159,7 @@ const Profile = () => {
                             <input
                                 className={cx('upload')}
                                 type="file"
+                                accept="image/*" // Chỉ chấp nhận hình ảnh
                                 disabled={stateUser?.imageUser ? true : false}
                                 onChange={(e) => uploadImage(e)}
                             />
@@ -219,19 +213,6 @@ const Profile = () => {
                     </label>
                     {errors.email && <span className={cx('error_message')}>{errors.email}</span>}
                 </div>
-                {/* <div className={cx('info')}>
-                    <input
-                        type="password"
-                        className={cx('info_txt')}
-                        id="user_password"
-                        value={password}
-                        autoComplete="off"
-                        onChange={(e) => e.target.value}
-                    />
-                    <label htmlFor="user_password" className={cx('info_label')}>
-                        Mật khẩu
-                    </label>
-                </div> */}
                 <div className={cx('info')}>
                     <input
                         type="text"

@@ -2,51 +2,86 @@ import classNames from 'classnames/bind';
 import styles from './Dashboard.module.scss';
 import Button from '~/components/Button/Button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBoxesStacked, faCartShopping, faEye, faMoneyCheckDollar } from '@fortawesome/free-solid-svg-icons';
+import { faBoxesStacked, faCartShopping, faMoneyCheckDollar } from '@fortawesome/free-solid-svg-icons';
 import { useEffect, useState } from 'react';
 import Image from '~/components/Image/Image';
 import { NumericFormat } from 'react-number-format';
-// import { useCookies } from 'react-cookie';
-// import axios from 'axios';
+import { fetchAllBill, fetchAllStock } from '~/service/api';
+import { Bill } from '~/models/Bill';
+import { UUID } from 'crypto';
+import { Product } from '~/models/Product';
 
 const cx = classNames.bind(styles);
 
-const Dashboard = () => {
-    // const [cookies, setCookie] = useCookies(['name']);
-    const [billData, setBillData] = useState([]);
-    const [stockData, setStockData] = useState([]);
+interface StockDTO {
+    id: UUID,
+    product: Product,
+    quantityInStock: number,
+    size: {
+        idSize: UUID,
+        sizeEur: string,
+        sizeVi: string
+    }
+}
 
+const Dashboard = () => {
+
+    useEffect(() => {
+        document.title = `Dashboard`; // cập nhật tiêu đề
+    }, []);
+    const [billData, setBillData] = useState<Bill[]>([]);
+    const [stockData, setStockData] = useState<StockDTO[]>([]);
     let money = 0;
     let quantitystock = 0;
-    // useEffect(() => {
-    //     if (cookies.name) {
-    //         axios.get('http://26.17.209.162/api/bill/get').then((res) => {
-    //             setBillData(res.data);
-    //         });
-    //         axios.get('http://26.17.209.162/api/stock/get').then((res) => {
-    //             setStockData(res.data);
-    //         });
-    //     }
-    // }, []);
+    useEffect(() => {
+        getBill()
+        getStock()
+    }, []);
 
-    // if (billData) {
-    //     billData.forEach((data) => {
-    //         money = money + data.TOTAL * 1;
-    //     });
-    // }
+    const getBill = async () => {
+        try {
+            const res = await fetchAllBill();
+            if (res.data.success) {
+                setBillData(res.data.result)
+            }
+        } catch (error) {
+            console.log(error);
 
-    // if (stockData) {
-    //     stockData.forEach((data) => {
-    //         quantitystock = quantitystock + data.QUANTITYINSTOCK * 1;
-    //     });
-    // }
+        }
+    }
+
+    const getStock = async () => {
+        try {
+            const res = await fetchAllStock();
+            if (res.data.success) {
+                setStockData(res.data.result)
+            }
+        } catch (error) {
+            console.log(error);
+
+        }
+    }
+
+    if (billData) {
+        billData.forEach((data) => {
+            money = money + data.totalAmount * 1;
+        });
+    }
+
+    if (stockData) {
+        stockData.forEach((data) => {
+            quantitystock = quantitystock + data.quantityInStock * 1;
+        });
+    }
 
     return (
         <>
             <div className={cx('card__box')}>
                 <div className={cx('card')}>
                     <div>
-                        <div className={cx('card-numbers')}>{billData ? billData.length : '0'}</div>
+                        <div className={cx('card-numbers')}>
+                            <NumericFormat value={billData ? billData.length : '0'} displayType={'text'} thousandSeparator={true} />
+                        </div>
                         <div className={cx('card-name')}>Số hóa đơn</div>
                     </div>
                     <div className={cx('card-icon')}>
@@ -56,7 +91,9 @@ const Dashboard = () => {
 
                 <div className={cx('card')}>
                     <div>
-                        <div className={cx('card-numbers')}>{stockData ? quantitystock : '0'}</div>
+                        <div className={cx('card-numbers')}>
+                            <NumericFormat value={stockData ? quantitystock : '0'} displayType={'text'} thousandSeparator={true} />
+                        </div>
                         <div className={cx('card-name')}>Số sản phẩm có trong kho</div>
                     </div>
                     <div className={cx('card-icon')}>
@@ -82,7 +119,7 @@ const Dashboard = () => {
                 <div className={cx('details-orders')}>
                     <div className={cx('details-header')}>
                         <h2 className={cx('details-header-heading')}>Đơn hàng gần đây</h2>
-                        <Button className={cx('details-header-btn')}>View All</Button>
+                        <Button to='/admin/bill' className={cx('details-header-btn')}>View All</Button>
                     </div>
                     {billData.length !== 0 ? (
                         <table className={cx('details-table')}>
@@ -95,19 +132,24 @@ const Dashboard = () => {
                                 </tr>
                             </thead>
                             {billData
-                                .sort((a, b) => b - a)
+                                .sort((a, b) => {
+                                    if (typeof b.billId === 'number' && typeof a.billId === 'number') {
+                                        return b.billId - a.billId;
+                                    }
+                                    return String(b.billId).localeCompare(String(a.billId));
+                                })
                                 .map((bill) => {
                                     return (
                                         <tbody className={cx('details-table-tbody')}
-                                        // key={bill.IDBILL}
+                                            key={bill.billId}
                                         >
                                             <tr>
                                                 <td>
-                                                    {/* {bill.FULLNAME} */}
+                                                    {bill.fullName}
                                                 </td>
                                                 <td>
                                                     <NumericFormat
-                                                        // value={bill.TOTAL}
+                                                        value={bill.totalAmount}
                                                         displayType={'text'}
                                                         thousandSeparator={true}
                                                         suffix={'đ'}
@@ -118,17 +160,17 @@ const Dashboard = () => {
                                                     <span
                                                         className={cx(
                                                             'status'
-                                                            // ,
-                                                            // bill.STATUSBILL === 'Chờ duyệt'
-                                                            //     ? 'pending'
-                                                            //     : bill.STATUSBILL === 'Trả về'
-                                                            //         ? 'return'
-                                                            //         : bill.STATUSBILL === 'Đang giao hàng'
-                                                            //             ? 'ingrogress'
-                                                            //             : 'delivered',
+                                                            ,
+                                                            bill.status === 'Chờ duyệt'
+                                                                ? 'pending'
+                                                                : bill.status === 'Trả về'
+                                                                    ? 'return'
+                                                                    : bill.status === 'Đang giao hàng'
+                                                                        ? 'ingrogress'
+                                                                        : 'delivered',
                                                         )}
                                                     >
-                                                        {/* {bill.STATUSBILL} */}
+                                                        {bill.status}
                                                     </span>
                                                 </td>
                                             </tr>
@@ -150,27 +192,31 @@ const Dashboard = () => {
                     {billData.length !== 0 ? (
                         <table className={cx('recent__customers-table')}>
                             {billData
-                                .sort((a, b) => b - a)
+                                .sort((a, b) => {
+                                    if (typeof b.billId === 'number' && typeof a.billId === 'number') {
+                                        return b.billId - a.billId;
+                                    }
+                                    return String(b.billId).localeCompare(String(a.billId));
+                                })
                                 .map((bill) => {
                                     return (
                                         <tbody
-                                        // key={bill.IDBILL}
+                                            key={bill.billId + bill.idAccount}
                                         >
                                             <tr>
                                                 <td width="60px">
                                                     <div className={cx('customers-img')}>
                                                         <Image
-                                                            src=''
-                                                        // src={bill.IMAGEUSER} 
-                                                        // alt={bill.FULLNAME } 
+                                                            src={bill.imageUser}
+                                                            alt={bill.fullName}
                                                         />
                                                     </div>
                                                 </td>
                                                 <td>
                                                     <h4>
-                                                        {/* {bill.FULLNAME} */}
+                                                        {bill.fullName}
                                                         <br />
-                                                        {/* <span> {bill.GENDER}</span> */}
+                                                        <span> {bill.gender}</span>
                                                     </h4>
                                                 </td>
                                             </tr>

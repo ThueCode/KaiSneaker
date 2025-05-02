@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import Button from '~/components/Button/Button';
@@ -33,12 +33,10 @@ const AddressItem: React.FC<AddressItemProps> = ({ addressData, getCourses }) =>
         address: "",
     });
 
-
     const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setStateAddress({ ...stateAddress, [name]: value });
     }
-
 
     const showBuyTickets = () => {
         setStatusModal(true);
@@ -51,9 +49,10 @@ const AddressItem: React.FC<AddressItemProps> = ({ addressData, getCourses }) =>
         e.preventDefault();
         try {
             const newErrors = validateForm();
+            setErrors(newErrors);
+
             // Nếu có lỗi thì không submit
             if (Object.values(newErrors).some(error => error !== '')) {
-                setErrors(newErrors);
                 return;
             }
             const idShoppingInfoId: UUID = addressData.shoppingInfoId;
@@ -63,6 +62,7 @@ const AddressItem: React.FC<AddressItemProps> = ({ addressData, getCourses }) =>
                 if (res.data.success) {
                     toast.success("Cập nhật địa chỉ thành công");
                     hideBuyTickets();
+
                     getCourses();
                 }
             }
@@ -82,6 +82,11 @@ const AddressItem: React.FC<AddressItemProps> = ({ addressData, getCourses }) =>
                     if (res.data.success) {
                         toast.success("Xóa địa chỉ thành công");
                         hideBuyTickets();
+                        setErrors({
+                            shoppingInfoName: "",
+                            shoppingInfoPhone: "",
+                            address: "",
+                        })
                         getCourses();
                     }
                 }
@@ -186,6 +191,7 @@ const AddressItem: React.FC<AddressItemProps> = ({ addressData, getCourses }) =>
                                     className={cx('input-item')}
                                     type="text"
                                     name='shoppingInfoPhone'
+                                    maxLength={10}
                                     value={stateAddress?.shoppingInfoPhone}
                                     onChange={handleChangeInput}
                                     placeholder="Số điện thoại"
