@@ -34,7 +34,7 @@ const deleteBrand = (idBrand: UUID) => {
 export interface SliderDTO {
     imageUrl: string;
     description: string;
-    order: number;
+    slideOrder: number;
 }
 
 const fetchAllSlide = () => {

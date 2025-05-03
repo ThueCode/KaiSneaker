@@ -19,7 +19,17 @@ const AdminSlider = () => {
 
     const [sliderModal, setSliderModal] = useState(false);
     const [sliderData, setSliderData] = useState<Slide[]>([]);
+    const [sliderDataState, setSliderDataState] = useState<SliderDTO>({
+        imageUrl: "",
+        description: "",
+        slideOrder: 1,
+    });
 
+    // State lưu trữ lỗi
+    const [errors, setErrors] = useState({
+        imageUrl: '',
+        slideOrder: '',
+    });
     //------ sài ticket
     const showBuyTickets = () => {
         setSliderModal(true);
@@ -30,26 +40,16 @@ const AdminSlider = () => {
         setSliderDataState({
             imageUrl: "",
             description: "",
-            order: 1,
+            slideOrder: 1,
         })
         setErrors({
-            order: "",
+            slideOrder: "",
             imageUrl: ""
         })
     }
     //------
 
-    const [sliderDataState, setSliderDataState] = useState<SliderDTO>({
-        imageUrl: "",
-        description: "",
-        order: 1,
-    });
 
-    // State lưu trữ lỗi
-    const [errors, setErrors] = useState({
-        imageUrl: '',
-        order: '',
-    });
 
     const uploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -77,7 +77,6 @@ const AdminSlider = () => {
         try {
             const res = await fetchAllSlide();
             if (res.data.success) {
-                console.log(res.data);
                 setSliderData(res.data.result)
             }
         } catch (error) {
@@ -105,11 +104,11 @@ const AdminSlider = () => {
         e.preventDefault();
 
         // Kiểm tra nếu order < 1
-        if (sliderDataState.order < 1) {
-            setErrors(prev => ({ ...prev, order: "Vị trí ưu tiên phải lớn hơn hoặc bằng 1" }));
+        if (sliderDataState.slideOrder < 1) {
+            setErrors(prev => ({ ...prev, slideOrder: "Vị trí ưu tiên phải lớn hơn hoặc bằng 1" }));
             return;
         } else {
-            setErrors(prev => ({ ...prev, order: '' })); // Xóa lỗi khi order hợp lệ
+            setErrors(prev => ({ ...prev, slideOrder: '' })); // Xóa lỗi khi order hợp lệ
         }
 
         // Kiểm tra nếu không có ảnh
@@ -129,6 +128,8 @@ const AdminSlider = () => {
     const handleSubmitSlide = async (data: SliderDTO) => {
         try {
             const res = await createSlide(data)
+            console.log(data);
+
             if (res.data.success) {
                 getSlide();
 
@@ -181,7 +182,7 @@ const AdminSlider = () => {
                                     <tr className={cx('details-content-list')} key={item.slideId}>
                                         <td className={cx('details-content-item')}>
                                             <div className={cx('details-content-item-priority')}>
-                                                {item.order}
+                                                {item.slideOrder}
                                             </div>
                                         </td>
                                         <td className={cx('details-content-item')}>
@@ -275,26 +276,26 @@ const AdminSlider = () => {
                         </label>
                         <input
                             className={cx('input-item')}
-                            type="text"
+                            type="number"
                             required
                             maxLength={2}
-                            value={sliderDataState.order}
-                            name='order'
+                            value={sliderDataState.slideOrder}
+                            name='slideOrder'
                             onKeyPress={(event) => {
                                 if (!/[0-9]/.test(event.key)) {
                                     event.preventDefault();
                                 }
                             }}
                             onChange={(e) => {
-                                setSliderDataState({ ...sliderDataState, order: +e.target.value });
+                                setSliderDataState({ ...sliderDataState, slideOrder: +e.target.value });
                                 if (+e.target.value < 1) {
-                                    setErrors(prev => ({ ...prev, order: "Vị trí ưu tiên phải lớn hơn hoặc bằng 1" }));
+                                    setErrors(prev => ({ ...prev, slideOrder: "Vị trí ưu tiên phải lớn hơn hoặc bằng 1" }));
                                 } else {
-                                    setErrors(prev => ({ ...prev, order: '' }));
+                                    setErrors(prev => ({ ...prev, slideOrder: '' }));
                                 }
                             }}
                         />
-                        {errors.order && <p className={cx('error-message')}>{errors.order}</p>}
+                        {errors.slideOrder && <p className={cx('error-message')}>{errors.slideOrder}</p>}
                         <label htmlFor="" className={cx('input-label')}>
                             Mô tả Slider
                         </label>

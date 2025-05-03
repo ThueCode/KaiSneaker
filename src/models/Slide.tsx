@@ -4,5 +4,5 @@ export interface Slide {
     slideId: UUID,
     imageUrl: string,
     description: string,
-    order: number
+    slideOrder: number
 }
